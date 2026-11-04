@@ -3,7 +3,7 @@ import { asShopId, asUserId } from '@sa/shared';
 import { sql } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { withContext, withShopContext, withUserContext, type Db, type DbRole } from './context';
-import { appendAudit } from './repositories/audit';
+import { AUDIT_ACTIONS, appendAudit, type AuditAction } from './repositories/audit';
 import { currentConsents, recordConsents } from './repositories/consents';
 import { rowsOf } from './repositories/rows';
 import { createShop, listMyShops, renameShop } from './repositories/shops';
@@ -126,11 +126,27 @@ describe('consent repository', () => {
 describe('audit repository', () => {
   it('appends an entry as the caller', async () => {
     await withShopContext(db, { role: 'sa_app', shopId: shopA, userId: OWNER_A }, (tx) =>
-      appendAudit(tx, { shopId: shopA, actor: OWNER_A, action: 'shop.renamed', entity: 'shop', entityId: shopA }),
+      appendAudit(tx, { shopId: shopA, actor: OWNER_A, action: 'shop.renamed', entityId: shopA }),
     );
     const rows = await withShopContext(db, { role: 'sa_app', shopId: shopA, userId: OWNER_A }, (tx) =>
       tx.select({ action: auditLog.action }).from(auditLog),
     );
     expect(rows).toEqual([{ action: 'shop.renamed' }]);
+  });
+
+  it('refuses an action outside the catalogue', async () => {
+    await expect(
+      withShopContext(db, { role: 'sa_app', shopId: shopA, userId: OWNER_A }, (tx) =>
+        appendAudit(tx, { shopId: shopA, actor: OWNER_A, action: 'shop.deleted' as AuditAction }),
+      ),
+    ).rejects.toThrow('Unknown audit action: shop.deleted');
+  });
+
+  it('covers every audited area named in threat T10', () => {
+    const entities = new Set(Object.values(AUDIT_ACTIONS).map((a) => a.entity));
+    for (const entity of ['consent_record', 'upload', 'unit_cost', 'recommendation', 'data_request']) {
+      expect(entities).toContain(entity);
+    }
+    expect(Object.keys(AUDIT_ACTIONS)).toContain('admin.access');
   });
 });
