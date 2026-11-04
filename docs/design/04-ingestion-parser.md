@@ -50,7 +50,7 @@ Rules:
 - **Order IDs** use `parse: 'order_id'`, which hashes in the worker: `hex(SHA-256(shop_salt ‖ utf8(order_id)))` via WebCrypto. The salt comes from the `POST /uploads` response and is the same for every upload of a shop, so hashes join across files (orders ↔ income). A raw order ID never enters a `CanonicalRecord`; its type is `OrderHash`, a branded string.
 - **Header normalisation:** NFC → lowercase → strip Vietnamese diacritics (keeping `đ`→`d`) → collapse whitespace and punctuation. Matching uses normalised aliases, so `Mã đơn hàng`, `Ma don hang` and `MÃ ĐƠN HÀNG` all match.
 - **Detection score:** `(matched required / total required) × 0.8 + (matched optional / total optional) × 0.2`. Accept at ≥ 0.8 with a margin of 0.15 over the runner-up. Otherwise ask the seller which export it is, or reject.
-- **Parsing values:** VND accepts `189.000`, `189,000`, `189000`, `₫189.000`, and `189.000 ₫` → `189000n`. Dates accept `dd/MM/yyyy`, `yyyy-MM-dd`, `dd-MM-yyyy HH:mm`, and Excel serial numbers. Timestamps are interpreted as `Asia/Ho_Chi_Minh`.
+- **Parsing values:** use `parseVnd` and `parseDisplayDate` from `@sa/shared`. VND accepts `189.000`, `189,000`, `189000`, `₫189.000`, and `189.000 ₫` → `189000n`. Dates accept `dd/MM/yyyy`, `yyyy-MM-dd`, `dd-MM-yyyy HH:mm`, and Excel serial numbers. Timestamps are interpreted as `Asia/Ho_Chi_Minh`.
 - **Status normalisation:** a per-parser map from Vietnamese status strings to `completed | cancelled | returned | in_progress`. An unknown status gives a row warning and the row is kept as `in_progress`, which excludes it from revenue.
 
 ## Export types (assumed — replace with real samples)
