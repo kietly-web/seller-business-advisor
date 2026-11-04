@@ -14,6 +14,19 @@ A learning project: an AI decision assistant for small Vietnamese Shopee sellers
 
 Code (once it exists) follows the monorepo layout in `docs/design/01-architecture.md`: `apps/web`, `packages/{db,parsers,engine,llm,shared}`.
 
+## Commands
+
+Node 24 (`.nvmrc`), pnpm via corepack (`corepack enable pnpm`).
+
+| Command | Does |
+| --- | --- |
+| `pnpm install` | Install the workspace |
+| `pnpm dev` | Run the web app locally |
+| `pnpm check` | Lint + typecheck (all packages) + tests; run before every PR |
+| `pnpm build` | Production build of `apps/web` |
+
+TypeScript is pinned to `~6.0.3` because typescript-eslint does not support 7.x yet.
+
 ## Non-negotiables
 
 These come from the discovery pack and the Vietnamese legal register. Do not trade them away for convenience; raise an ADR instead.
