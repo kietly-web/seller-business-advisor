@@ -54,7 +54,7 @@ Each requirement maps to the design section that answers it, the backlog items t
 
 | Risk | Control in design | Where |
 | --- | --- | --- |
-| R1 | Repository layer, standard Postgres, exit runbook | ADR-002, SA-006 |
+| R1 | Repository layer, standard Postgres, exit runbook | ADR-002, SA-006, `docs/research/vn-cloud-postgres.md` |
 | R2 | Versioned parsers, detection score, unknown-header alert | 04 |
 | R3 | Upload path is the full product; adapter interface ready | 01 Phase 2 hook |
 | R4 | Cost-aware profit, outcomes, platform-agnostic model | 02, 05 |
