@@ -15,7 +15,8 @@ Real seller data never leaves production: no production snapshots in preview, an
 ## Vercel setup
 
 - Framework: Next.js; package manager pnpm; root `apps/web` with workspace packages built through `transpilePackages`.
-- `vercel.json`: `"regions": ["sin1"]` so functions run next to Neon, plus the cron schedule below.
+- Project settings: Root Directory `apps/web` (files outside it included, for the workspace packages), Node.js 24.x, no Output Directory override.
+- `apps/web/vercel.json` (it lives in the Root Directory): `"framework": "nextjs"` so the preset can't drift to "Other", `"regions": ["sin1"]` so functions run next to Neon, plus the cron schedule below once SA-109 adds it.
 - Fluid compute on. Long jobs get `export const maxDuration` per route (check the current plan limits when implementing).
 - Request bodies are capped at 4.5 MB for functions, hence chunked ingest (see 04).
 - Firewall: rate-limit rules on `/api/ingest/*` and the auth endpoints; bot protection on sign-up.
