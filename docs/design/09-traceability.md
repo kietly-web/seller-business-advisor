@@ -27,7 +27,7 @@ Each requirement maps to the design section that answers it, the backlog items t
 
 | Req | Design | Backlog | Tests / checks |
 | --- | --- | --- | --- |
-| NFR-SEC | 03, 02 RLS, ADR-006 | SA-102–SA-104, SA-505 | RLS suite, CSP check, `pnpm audit` gate, ASVS checklist |
+| NFR-SEC | 03, 02 RLS, ADR-006 | SA-102–SA-104, SA-505 | `packages/db/src/rls/generated.test.ts` (every `shop_id` table: scoped reads, spoofed membership, no context, no cross-shop move, worker scope), `packages/db/src/rls/policies.test.ts` (special cases, policy coverage), `packages/db/src/context.test.ts`; CSP check, `pnpm audit` gate, ASVS checklist |
 | NFR-PRIV | 03, ADR-003 | SA-201, SA-503 | PII tests, DSR timer tests |
 | NFR-PERF | 01 Performance budget | SA-304, SA-506 | Perf test (50k lines), parse benchmark (20 MB < 30 s) |
 | NFR-AVAIL | 07 Observability | SA-509 | Uptime check |
