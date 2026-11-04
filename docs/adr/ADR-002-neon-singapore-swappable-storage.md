@@ -18,6 +18,7 @@ Discovery chose Neon in `aws-ap-southeast-1`. The 2025 Cybersecurity Law may req
 - Neon's branch-per-PR workflow is available now. If we leave Neon, preview environments need another approach (schema-per-PR or a shared staging DB).
 - A VN cloud quote is needed in M0 so the cost of the exit path is known before beta.
 - The cross-border transfer impact assessment is required regardless of the answer.
+- Provider comparison, quote questions and the exit runbook outline: [`docs/research/vn-cloud-postgres.md`](../research/vn-cloud-postgres.md) (SA-006).
 
 ## Alternatives considered
 
