@@ -32,6 +32,7 @@ These come from the discovery pack and the Vietnamese legal register. Do not tra
 - UI copy is Vietnamese first; keep strings in `apps/web/messages/vi.json`. Docs and code are English.
 - Format VND as `1.234.000 ₫` and dates as `dd/MM/yyyy` via `packages/shared/format`.
 - Commit subjects, PR titles and branch names: `SA-123 short imperative description` (backlog IDs from `docs/design/08-delivery-plan.md`). Branch ≤ 60 chars, e.g. `SA-104-rls-policies`.
+- PR descriptions follow `.github/pull_request_template.md`. The `## What changed` section is required (CI fails if it is empty): one or two sentences on what changed and why.
 - Code comments: default none; only a non-obvious why, a gotcha, or an external constraint, one line each.
 
 ## Working on a task

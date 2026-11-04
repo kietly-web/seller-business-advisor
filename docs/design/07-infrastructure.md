@@ -91,7 +91,7 @@ flowchart LR
 ```
 
 - Migrations run in Actions before the production deploy is promoted, and are never run at function start.
-- Required checks: lint, typecheck, unit, RLS, golden (engine), e2e smoke, `pnpm audit` (high/critical), secret scan.
+- Required checks: lint, typecheck, unit, RLS, golden (engine), e2e smoke, `pnpm audit` (high/critical), secret scan, and `PR description` (`.github/workflows/pr-description.yml`: fails when `## What changed` is empty).
 - Actions pinned by commit SHA; Dependabot for npm and actions.
 
 ## Observability (NFR-OBS)

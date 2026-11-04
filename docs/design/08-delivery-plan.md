@@ -111,7 +111,7 @@ ID format `SA-<milestone><nn>`, which is also the commit and branch prefix (see 
 
 ## Working agreement for agents
 
-1. One backlog item per branch/PR, named `SA-xxx-short-slug` (≤ 60 chars).
+1. One backlog item per branch/PR, named `SA-xxx-short-slug` (≤ 60 chars). The PR uses `.github/pull_request_template.md`, and its `## What changed` section must be filled in; the `PR description` check enforces it.
 2. The owning agent implements, `qa-engineer` adds or extends tests, and `security-compliance-reviewer` reviews any change touching `db`, `parsers`, `llm`, auth or ingest routes.
 3. A change that contradicts a design doc updates the doc or adds an ADR in the same PR (`solution-architect` reviews).
 4. Definition of done: acceptance criteria from the US met; tests green in CI; traceability row updated; no new sub-processor without an ADR; vi strings in `messages/vi.json`; no comments that just narrate the code.
