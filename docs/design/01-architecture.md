@@ -126,7 +126,7 @@ Export streams a ZIP of CSVs straight from an owner-only route handler. It is ge
 | Validation | zod schemas in `packages/shared`, used by both client and server | One contract for parser output and API input |
 | i18n | `next-intl`, `vi` default, `en` for internal/admin | NFR-L10N |
 | Charts | Lightweight SVG components (no heavy chart lib on mobile) | NFR-PERF |
-| Testing | Vitest (unit), Testcontainers or Neon branch (integration + RLS), Playwright (e2e, mobile viewport) | NFR-MAINT |
+| Testing | Vitest (unit), PGlite in-process Postgres (integration + RLS), a Neon branch job before beta, Playwright (e2e, mobile viewport) | NFR-MAINT |
 
 ## Performance budget (NFR-PERF)
 

@@ -1,6 +1,8 @@
 packages:
   - apps/*
   - packages/*
+allowBuilds:
+  esbuild: true
 minimumReleaseAgeExclude:
   - '@next/eslint-plugin-next@16.4.5'
   - '@next/env@16.4.5'

@@ -29,7 +29,7 @@ You are the database engineer for Shopee Seller Advisor (Neon Postgres, Singapor
 ## Definition of done
 - Migration applies cleanly on a fresh Neon branch and on a branch with demo data.
 - The RLS CI check passes (every `shop_id` table has policies), and the generated RLS suite covers any new table automatically. Run it.
-- Repository functions have integration tests against a real Postgres (Neon branch or Testcontainers), not mocks.
+- Repository functions have integration tests against a real Postgres (PGlite via `packages/db/src/testing/pglite.ts`, or a Neon branch), not mocks.
 - `docs/design/02-data-model.md` updated if the schema changed, in the same change.
 
 Hand off to `security-compliance-reviewer` for any change to roles, grants, policies, `app_ctx` functions, ingest or DSR code.

@@ -3,7 +3,7 @@ import tseslint from 'typescript-eslint';
 import nextPlugin from '@next/eslint-plugin-next';
 
 export default defineConfig(
-  { ignores: ['**/node_modules/**', '**/.next/**', '**/coverage/**', '**/next-env.d.ts'] },
+  { ignores: ['**/node_modules/**', '**/.next/**', '**/coverage/**', '**/next-env.d.ts', '.claude/**', 'packages/db/migrations/**'] },
   tseslint.configs.strict,
   {
     ...nextPlugin.configs['core-web-vitals'],

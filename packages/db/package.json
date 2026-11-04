@@ -7,9 +7,16 @@
     ".": "./src/index.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate"
   },
   "dependencies": {
-    "@sa/shared": "workspace:*"
+    "@neondatabase/serverless": "1.2.0",
+    "@sa/shared": "workspace:*",
+    "drizzle-orm": "0.45.4"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.15",
+    "drizzle-kit": "0.31.11"
   }
 }

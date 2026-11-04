@@ -31,7 +31,7 @@ erDiagram
 | Topic | Rule |
 | --- | --- |
 | Keys | `uuid` primary keys, `gen_random_uuid()` |
-| Tenant column | `shop_id uuid not null` on every tenant table, first column of most indexes |
+| Tenant column | `shop_id uuid not null` on every tenant table, first column of most indexes, with a foreign key to `app.shop` `on delete cascade`, so deleting a shop removes all its data (US-08) |
 | Money | `bigint` VND, column suffix `_vnd`. Never `numeric` floats in app code; `bigint` maps to JS `bigint` |
 | Percentages | `numeric(7,4)` as fractions (0.1500 = 15%) |
 | Time | `timestamptz` for events; `date` for business days in `Asia/Ho_Chi_Minh`; `iso_week text` as `2026-W45` |
@@ -445,3 +445,5 @@ Gotchas:
 ## Migrations
 
 Drizzle Kit generates table DDL, and hand-written SQL files (`rls.sql`, `functions.sql`, `grants.sql`) run after it in the same migration step. Migrations run in CI against a Neon branch before merge and against production on deploy. They are never run from a Vercel function (ADR-006).
+
+Implemented in `packages/db`: the schema lives in `src/schema/*.ts`, `pnpm --filter @sa/db db:generate` writes SQL to `migrations/`, and money defaults use `sql\`0\`` because drizzle-kit cannot serialise `bigint` defaults. Integration and RLS tests apply the migrations to [PGlite](https://pglite.dev) (Postgres 18 in-process, via `src/testing/pglite.ts`), so they run locally and in CI without a database service or secrets. A Neon-branch job is added before beta to catch any Neon-specific difference.
