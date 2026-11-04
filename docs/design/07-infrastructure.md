@@ -66,7 +66,7 @@ On failure: `run_after = now() + 2^attempts minutes` and `last_error` recorded. 
 | Name | Scope | Notes |
 | --- | --- | --- |
 | `DATABASE_URL` | all | `sa_app`, pooled |
-| `DATABASE_URL_WORKER` | all | `sa_worker`, pooled |
+| `DATABASE_URL_WORKER` | all | `sa_worker`, pooled; falls back to `DATABASE_URL` until separate LOGIN roles exist (the worker still runs as `sa_worker` via `SET LOCAL ROLE`) |
 | `DATABASE_URL_MIGRATE` | CI only | `sa_owner`, direct; never in the Vercel runtime |
 | `DATABASE_URL_UNPOOLED` | all (set by integration) | Owner role, direct. Not used by the app at runtime; remove or ignore once SA-102 lands |
 | `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` | all | Different per environment |

@@ -427,6 +427,8 @@ export async function withShopContext<T>(
 }
 ```
 
+As built (SA-103): `packages/db/src/context.ts` exports `withContext`, `withShopContext` and `withUserContext` (user only, no shop: listing shops, `create_shop`, consents). Each opens a transaction, runs `SET LOCAL ROLE sa_app|sa_worker`, then sets the context. The role switch means queries run with the group role's rights even if the connection string is the Neon owner. Migration 0003 grants the connecting role membership in both group roles. `appDb()` / `workerDb()` in `client.ts` build Drizzle over the Neon WebSocket `Pool`. Repositories (`repositories/shops.ts`, `consents.ts`, `audit.ts`) take the `Tx` and never open their own connection. The policy coverage check runs as a test (`src/rls/policies.test.ts`, "policy coverage").
+
 Gotchas:
 
 - `set_config(..., true)` only lives inside a transaction. With the Neon **HTTP** driver each statement is its own transaction, so the setting would be lost. Use the WebSocket `Pool` driver for anything that touches tenant tables.
