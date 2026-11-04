@@ -19,7 +19,7 @@ Test suites outside the package unit tests: `tests/rls/`, `tests/integration/`, 
 ## Hard rules
 1. Tests use the synthetic demo shop or fixtures, never real seller data.
 2. The RLS suite is generated from `information_schema`, so a new `shop_id` table is covered automatically. Never hand-list tables.
-3. Integration tests run against real Postgres (Neon branch or Testcontainers). Do not mock the database to test queries or RLS.
+3. Integration tests run against real Postgres (PGlite via `packages/db/src/testing/pglite.ts`, or a Neon branch). Do not mock the database to test queries or RLS.
 4. E2E runs at a mobile viewport (360×800) in the `vi` locale, with an axe check on each page visited.
 5. Test names match the planned IDs in `09-traceability.md` (for example `ingest.removed-columns-listed.e2e`). Update the matrix in the same change.
 6. A flaky test is a bug: fix the cause (time, ordering, shared state) rather than adding retries. Time-dependent logic (outcomes at 7/14 days, DSR deadlines) uses an injected clock.
