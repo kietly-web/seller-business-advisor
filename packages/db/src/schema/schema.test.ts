@@ -46,7 +46,7 @@ async function rejects(sql: string): Promise<boolean> {
 beforeAll(async () => {
   ({ client } = await createTestDb());
   await client.exec(`
-    insert into app.shop (id, name, order_hash_salt) values ('00000000-0000-0000-0000-00000000000a', 'A', '\\x00');
+    insert into app.shop (id, name, order_hash_salt) values ('00000000-0000-0000-0000-00000000000a', 'A', '\\x00000000000000000000000000000000');
     insert into app.upload (id, shop_id, uploaded_by, export_type, parser_id, file_sha256, file_name, removed_columns, status)
       values ('00000000-0000-0000-0000-0000000000a1', '00000000-0000-0000-0000-00000000000a', 'u', 'shopee.orders', 'shopee.orders@v1', 'f', 'f.xlsx', '[]', 'parsed');
     insert into app.sku (id, shop_id, name) values ('00000000-0000-0000-0000-0000000000a2', '00000000-0000-0000-0000-00000000000a', 'Kệ gia vị 3 tầng');

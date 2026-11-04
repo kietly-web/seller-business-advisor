@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { boolean, check, date, index, integer, primaryKey, text, unique, uuid } from 'drizzle-orm/pg-core';
+import { boolean, check, date, foreignKey, index, integer, primaryKey, text, unique, uuid } from 'drizzle-orm/pg-core';
 import { app, id, tstz, vnd } from './columns';
 import { upload } from './ingestion';
 import { shop } from './tenancy';
@@ -18,7 +18,10 @@ export const sku = app.table(
     variation: text('variation'),
     active: boolean('active').notNull().default(true),
   },
-  (t) => [unique('sku_platform_unique').on(t.shopId, t.platformItemId, t.platformModelId)],
+  (t) => [
+    unique('sku_platform_unique').on(t.shopId, t.platformItemId, t.platformModelId),
+    unique('sku_shop_id_unique').on(t.shopId, t.id),
+  ],
 );
 
 export const orderLine = app.table(
@@ -28,17 +31,13 @@ export const orderLine = app.table(
     shopId: uuid('shop_id')
       .notNull()
       .references(() => shop.id, { onDelete: 'cascade' }),
-    uploadId: uuid('upload_id')
-      .notNull()
-      .references(() => upload.id, { onDelete: 'cascade' }),
+    uploadId: uuid('upload_id').notNull(),
     sourceRow: integer('source_row').notNull(),
     orderHash: text('order_hash').notNull(),
     orderStatus: text('order_status').notNull(),
     orderedAt: tstz('ordered_at').notNull(),
     completedAt: tstz('completed_at'),
-    skuId: uuid('sku_id')
-      .notNull()
-      .references(() => sku.id),
+    skuId: uuid('sku_id').notNull(),
     quantity: integer('quantity').notNull(),
     unitListPriceVnd: vnd('unit_list_price_vnd').notNull(),
     grossRevenueVnd: vnd('gross_revenue_vnd').notNull(),
@@ -46,6 +45,8 @@ export const orderLine = app.table(
     platformDiscountVnd: vnd('platform_discount_vnd').notNull().default(sql`0`),
   },
   (t) => [
+    foreignKey({ name: 'order_line_upload_fk', columns: [t.shopId, t.uploadId], foreignColumns: [upload.shopId, upload.id] }).onDelete('cascade'),
+    foreignKey({ name: 'order_line_sku_fk', columns: [t.shopId, t.skuId], foreignColumns: [sku.shopId, sku.id] }).onDelete('cascade'),
     unique('order_line_order_sku_unique').on(t.shopId, t.orderHash, t.skuId),
     index('order_line_shop_sku_completed_idx').on(t.shopId, t.skuId, t.completedAt),
     check('order_line_quantity_check', sql`${t.quantity} >= 0`),
@@ -64,17 +65,17 @@ export const feeLine = app.table(
     shopId: uuid('shop_id')
       .notNull()
       .references(() => shop.id, { onDelete: 'cascade' }),
-    uploadId: uuid('upload_id')
-      .notNull()
-      .references(() => upload.id, { onDelete: 'cascade' }),
+    uploadId: uuid('upload_id').notNull(),
     sourceRow: integer('source_row').notNull(),
     orderHash: text('order_hash').notNull(),
-    skuId: uuid('sku_id').references(() => sku.id),
+    skuId: uuid('sku_id'),
     feeType: text('fee_type').notNull(),
     amountVnd: vnd('amount_vnd').notNull(),
     incurredOn: date('incurred_on').notNull(),
   },
   (t) => [
+    foreignKey({ name: 'fee_line_upload_fk', columns: [t.shopId, t.uploadId], foreignColumns: [upload.shopId, upload.id] }).onDelete('cascade'),
+    foreignKey({ name: 'fee_line_sku_fk', columns: [t.shopId, t.skuId], foreignColumns: [sku.shopId, sku.id] }).onDelete('cascade'),
     index('fee_line_shop_order_idx').on(t.shopId, t.orderHash),
     check(
       'fee_line_type_check',
@@ -90,19 +91,19 @@ export const productTraffic = app.table(
     shopId: uuid('shop_id')
       .notNull()
       .references(() => shop.id, { onDelete: 'cascade' }),
-    skuId: uuid('sku_id')
-      .notNull()
-      .references(() => sku.id, { onDelete: 'cascade' }),
+    skuId: uuid('sku_id').notNull(),
     day: date('day').notNull(),
     views: integer('views'),
     visitors: integer('visitors'),
     addToCart: integer('add_to_cart'),
     orders: integer('orders'),
     units: integer('units'),
-    uploadId: uuid('upload_id')
-      .notNull()
-      .references(() => upload.id, { onDelete: 'cascade' }),
+    uploadId: uuid('upload_id').notNull(),
     sourceRow: integer('source_row').notNull(),
   },
-  (t) => [primaryKey({ columns: [t.shopId, t.skuId, t.day] })],
+  (t) => [
+    primaryKey({ columns: [t.shopId, t.skuId, t.day] }),
+    foreignKey({ name: 'product_traffic_upload_fk', columns: [t.shopId, t.uploadId], foreignColumns: [upload.shopId, upload.id] }).onDelete('cascade'),
+    foreignKey({ name: 'product_traffic_sku_fk', columns: [t.shopId, t.skuId], foreignColumns: [sku.shopId, sku.id] }).onDelete('cascade'),
+  ],
 );

@@ -349,6 +349,17 @@ create table app.llm_call (              -- NFR-OBS; no prompt bodies stored
 
 Every tenant table has `ENABLE ROW LEVEL SECURITY` and `FORCE ROW LEVEL SECURITY`, so even an accidental owner connection is filtered.
 
+As built (SA-102, `packages/db/migrations/0001_rls.sql`):
+
+- `sa_app` and `sa_worker` are `NOLOGIN NOBYPASSRLS` group roles created by the migration. The LOGIN roles that Vercel connects with are created per environment outside git (Neon console or API, passwords never committed) and granted one group role each. The migrating role is the Neon project owner, standing in for `sa_owner`.
+- `shop` and `shop_member` have RLS enabled but **not forced**. The `SECURITY DEFINER` functions run as the owner and must read them unfiltered; `sa_app` and `sa_worker` are still restricted by their policies.
+- `job` has RLS after all: `sa_app` may only enqueue (`INSERT`) for its own shop and cannot read the queue; `sa_worker` has full access. This stops a web request from queueing work against another shop.
+- Onboarding goes through `app_ctx.create_shop(name, category, is_demo)`, a `SECURITY DEFINER` function that inserts the shop, generates its 32-byte order-hash salt, and adds the caller as owner. `sa_app` has no direct `INSERT` on `shop` or `shop_member`, and may only `UPDATE` `name`, `category` and `settings`.
+- Child rows reference parents by `(shop_id, id)` composite foreign keys (`UNIQUE(shop_id, id)` on `upload`, `sku`, `competitor_listing`, `recommendation_run`, `recommendation`), and `shop_id` is part of the `ingest_stage` and `outcome` primary keys. Foreign-key checks bypass RLS, so a single-column FK would let shop A reference, probe for, or block the deletion of shop B's rows (migration 0002).
+- `job.dedupe_key` is unique per shop (`NULLS NOT DISTINCT` for shop-less jobs), so one shop cannot pre-empt another's key.
+- `audit_log` inserts from `sa_app` must have `actor = app_ctx.user_id()`. `data_request` accepts only `user_id` and `kind` from `sa_app`; a trigger sets `received_at`, the deadlines and `status = 'open'` (deadlines in calendar days; the acknowledgement skips weekends in ICT).
+- Each statement in a hand-written migration needs its own `--> statement-breakpoint`, because the Drizzle migrator sends each chunk as one prepared statement.
+
 ### Session context
 
 ```sql
@@ -392,7 +403,7 @@ Special cases:
 | `shop_member` | `sa_app`: `user_id = app_ctx.user_id()` (see own memberships) |
 | `consent_record`, `data_request` | `user_id = app_ctx.user_id()`; `sa_app` gets `insert`, `select` only |
 | `audit_log` | `insert` for both roles; `select` own shop; no `update`/`delete` grant |
-| `job` | `sa_worker` only; no RLS (contains no business data beyond ids) |
+| `job` | `sa_app`: `INSERT` for its own shop only; `sa_worker`: all rows |
 | `rule_track_record` | read global rows (`shop_id is null`) + own shop; worker writes |
 | `llm_call` | worker/app insert; owner-only select (ops dashboards via the migrate role in a read-only session) |
 

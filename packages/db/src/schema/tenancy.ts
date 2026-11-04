@@ -16,7 +16,10 @@ export const shop = app.table(
     settings: jsonb('settings').notNull().default({}),
     createdAt: createdAt(),
   },
-  (t) => [check('shop_platform_check', sql`${t.platform} in ('shopee', 'tiktok', 'lazada')`)],
+  (t) => [
+    check('shop_platform_check', sql`${t.platform} in ('shopee', 'tiktok', 'lazada')`),
+    check('shop_salt_length_check', sql`octet_length(${t.orderHashSalt}) >= 16`),
+  ],
 );
 
 export const shopMember = app.table(

@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { bigint, check, index, integer, jsonb, numeric, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { bigint, check, index, integer, jsonb, numeric, text, timestamp, unique, uuid } from 'drizzle-orm/pg-core';
 import { app, createdAt, id, tstz } from './columns';
 import { shop } from './tenancy';
 
@@ -50,9 +50,12 @@ export const job = app.table(
     lockedBy: text('locked_by'),
     lastError: text('last_error'),
     doneAt: tstz('done_at'),
-    dedupeKey: text('dedupe_key').unique(),
+    dedupeKey: text('dedupe_key'),
   },
-  (t) => [index('job_due_idx').on(t.runAfter).where(sql`${t.doneAt} is null`)],
+  (t) => [
+    index('job_due_idx').on(t.runAfter).where(sql`${t.doneAt} is null`),
+    unique('job_shop_dedupe_unique').on(t.shopId, t.dedupeKey).nullsNotDistinct(),
+  ],
 );
 
 export const llmCall = app.table(
