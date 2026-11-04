@@ -119,9 +119,14 @@ North star: profit-positive actions per active shop per month (accepted recommen
 
 ## Open questions carried into design
 
+Legal questions Q-L1 to Q-L6 are framed for counsel, with product facts and design impact, in [`docs/compliance/counsel-questions.md`](../compliance/counsel-questions.md).
+
 - Q-L1 Is a seller-analytics SaaS an enumerated service under the Cybersecurity Law localisation rules? (counsel)
 - Q-L2 E-commerce support service provider? Data-processing service provider under Decree 356? (counsel)
 - Q-L3 AI Law tier: low, or medium once chat ships? (counsel + memo)
+- Q-L4 Transfer impact assessment: when the 60-day clock starts, content, and updates when sub-processors change (counsel)
+- Q-L5 Retention of consent records and audit log, including after account deletion (counsel)
+- Q-L6 Can the household business operate the SaaS, keep the PDP exemptions and apply as a Shopee ISV? (counsel; overlaps Q-D2)
 - Q-D1 Which Seller Centre exports exist, and which columns? (seller samples) — design proceeds on assumed columns, see `docs/design/04-ingestion-parser.md`
 - Q-D2 Shopee Vietnam ISV requirements for a household business
 - Q-B1 Shopee-only seller counts by GMV band
@@ -134,3 +139,4 @@ North star: profit-positive actions per active shop per month (accepted recommen
 | --- | --- |
 | 2026-11-04 | Created from the discovery pack; Q-T1 provider decided (Claude) |
 | 2026-11-04 | Retention changed from "raw files deleted within 7 days" to "no file bytes stored at all" (ADR-003) |
+| 2026-11-04 | Counsel questions pack added (SA-005); new open questions Q-L4 to Q-L6 |
