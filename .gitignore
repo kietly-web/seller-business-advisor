@@ -1,0 +1,10 @@
+# Real seller exports: never commit; anonymise into packages/parsers/fixtures instead
+samples/
+
+node_modules/
+.next/
+.vercel/
+.env*
+!.env.example
+*.log
+.DS_Store
