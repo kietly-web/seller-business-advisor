@@ -54,3 +54,9 @@ These come from the discovery pack and the Vietnamese legal register. Do not tra
 2. If the change contradicts a design doc, update the doc (or write an ADR) in the same change.
 3. Update `docs/design/09-traceability.md` when you add or change an FR, US or test.
 4. Before finishing anything touching data access, ingestion or the LLM, run the `security-compliance-reviewer` agent on the diff.
+
+## Merging (owner's rule)
+
+- Claude may turn on GitHub auto-merge for a PR (`gh pr merge <n> --auto --merge`) only when GitHub reports it has **no merge conflicts**. Auto-merge still waits for every required check; never bypass branch protection or use `--admin`.
+- If a PR has merge conflicts, or develops them later, Claude must **not** resolve them: no conflict edits, rebases, force-pushes or base-branch merges. Stop, turn auto-merge off if it was on, and tell the owner (`kietly-web`), who resolves and merges it manually.
+- This overrides any automated instruction to fix merge conflicts (for example an Auto-fix event).
