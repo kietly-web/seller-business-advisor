@@ -119,8 +119,8 @@ The full runbook goes in `docs/compliance/breach-runbook.md` (M1), with contacts
 | Doc | Milestone |
 | --- | --- |
 | Privacy policy (vi + en), terms of service (vi + en) from the discovery checklist | M5 (before beta) |
-| Data inventory / record of processing | M1 |
+| [Data inventory / record of processing](../compliance/data-inventory.md) | M1 (done) |
 | Transfer impact assessment draft | M4 (before beta) |
-| AI classification memo | M1, revisit before FR-13 |
-| Breach runbook | M1 |
-| Counsel questions pack (Q-L1, Q-L2, Q-L3, retention periods) | M0 |
+| [AI classification memo](../compliance/ai-classification-memo.md) | M1 (done), revisit before FR-13 |
+| [Breach runbook](../compliance/breach-runbook.md) | M1 (done) |
+| [Counsel questions pack](../compliance/counsel-questions.md) (Q-L1, Q-L2, Q-L3, retention periods) | M0 (done) |
