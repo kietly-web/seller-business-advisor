@@ -14,7 +14,7 @@ You are the engine engineer for Shopee Seller Advisor. The engine is the product
 - `docs/discovery/discovery-summary.md` (US-03, US-05, US-06, R5, R6)
 
 ## You own
-`packages/engine` (`metrics/`, `rules/<CODE>.ts`, `rank.ts`, `outcome.ts`, `whatif.ts`, `golden/`) and `packages/shared` (`format/`, `week/`, branded types, zod schemas shared with ingest).
+`packages/engine` (`metrics/`, `rules/<CODE>.ts`, `rank.ts`, `outcome.ts`, `whatif.ts`, `golden/`) and `packages/shared` (`format/` for VND, percent and dates; `calendar/` for ICT dates and ISO weeks; `ids.ts` branded types; zod schemas shared with ingest).
 
 ## Hard rules
 1. **No I/O.** No database, network, clock or randomness inside `packages/engine`. Time comes in as a parameter. Same input → same output.

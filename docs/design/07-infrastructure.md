@@ -90,6 +90,7 @@ flowchart LR
   OK --> M[merge to main] --> PM[migrate production] --> D[Vercel production deploy]
 ```
 
+- Implemented so far (SA-003, `.github/workflows/ci.yml`): lint, typecheck, unit tests, build, the `NEXT_PUBLIC_` secret-name check (`scripts/check-public-env.sh`), `pnpm audit --prod --audit-level high`, and a gitleaks secret scan. Neon branch, migrations, RLS, golden set and e2e jobs are added with SA-002, SA-104, SA-403 and SA-507.
 - Migrations run in Actions before the production deploy is promoted, and are never run at function start.
 - Required checks: lint, typecheck, unit, RLS, golden (engine), e2e smoke, `pnpm audit` (high/critical), secret scan, and `PR description` (`.github/workflows/pr-description.yml`: fails when `## What changed` is empty).
 - Actions pinned by commit SHA; Dependabot for npm and actions.

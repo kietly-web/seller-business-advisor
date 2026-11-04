@@ -32,7 +32,7 @@ Each requirement maps to the design section that answers it, the backlog items t
 | NFR-PERF | 01 Performance budget | SA-304, SA-506 | Perf test (50k lines), parse benchmark (20 MB < 30 s) |
 | NFR-AVAIL | 07 Observability | SA-509 | Uptime check |
 | NFR-A11Y | — | SA-506 | axe in Playwright, manual screen-reader pass |
-| NFR-L10N | `packages/shared` | SA-004 | `shared.format.vnd.unit`, `shared.week-ict.unit` |
+| NFR-L10N | `packages/shared` | SA-004 | `packages/shared/src/format/format.test.ts` (VND, compact VND, percent, dd/MM/yyyy), `packages/shared/src/calendar/calendar.test.ts` (ICT dates, ISO weeks) |
 | NFR-OBS | 07 | SA-509 | `llm_call` populated assertion |
 | NFR-AIQ | 06 Validation, ADR-004 | SA-404, SA-405 | `llm.no-stray-digits.unit`, live golden eval |
 | NFR-MAINT | 07 CI | SA-001, SA-003 | CI required checks |
