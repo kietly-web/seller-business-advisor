@@ -58,6 +58,8 @@ On failure: `run_after = now() + 2^attempts minutes` and `last_error` recorded. 
 - Pooling: the app uses the pooled connection string with the WebSocket driver. Migrations use the direct (unpooled) string.
 - Autoscaling min 0.25 CU in preview, min 0.5 CU in production during beta, to limit cold starts on the Monday run. Scale-to-zero is fine for previews.
 - Point-in-time restore window: the plan default, at least 7 days in production. Run a monthly restore drill into a branch, with the result logged.
+- Connected through the Neon–Vercel integration (SA-002, 2026-11-04). It injects `DATABASE_URL` (pooled) and `DATABASE_URL_UNPOOLED` (direct) for Development and Production, and creates a Neon branch plus its variables per preview deployment. Those URLs use the Neon owner role until SA-102 adds `sa_app` / `sa_worker`; from then on the runtime variables must point at the non-owner roles (see the table below), or RLS is bypassed in practice.
+- The demo-data `seed` branch is created with the schema and demo seeding (SA-101, SA-209); until then preview branches fork the empty default branch.
 
 ## Environment variables
 
@@ -66,6 +68,7 @@ On failure: `run_after = now() + 2^attempts minutes` and `last_error` recorded. 
 | `DATABASE_URL` | all | `sa_app`, pooled |
 | `DATABASE_URL_WORKER` | all | `sa_worker`, pooled |
 | `DATABASE_URL_MIGRATE` | CI only | `sa_owner`, direct; never in the Vercel runtime |
+| `DATABASE_URL_UNPOOLED` | all (set by integration) | Owner role, direct. Not used by the app at runtime; remove or ignore once SA-102 lands |
 | `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL` | all | Different per environment |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | all | Separate OAuth clients for preview and production |
 | `ANTHROPIC_API_KEY` | all | Separate keys and spend limits per environment |
