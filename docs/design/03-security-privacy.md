@@ -27,7 +27,7 @@ Raw Shopee order IDs are treated as C3 because they can be linked back to a buye
 | T7 | Malicious upload (zip bomb, formula injection) | Browser, exports | XLSX parsed in a Worker with size cap (25 MB) and row cap (500k); cells starting with `= + - @` escaped on CSV export | Fuzz fixtures |
 | T8 | Secrets leak | All | Env vars only; no secrets in client bundles (`server-only` imports); GitHub secret scanning; separate keys per environment | CI check for `NEXT_PUBLIC_` misuse |
 | T9 | Job worker runs a job for the wrong shop | C1 | Jobs carry `shop_id`; handler always enters `withShopContext(job.shop_id)` | Unit test on the job runner |
-| T10 | Repudiation of a decision | Audit | `audit_log` for consent, upload, cost change, recommendation decision, DSR, admin access | Audit coverage test |
+| T10 | Repudiation of a decision | Audit | `audit_log` for consent, upload, cost change, recommendation decision, DSR, admin access; actions are a fixed catalogue (`AUDIT_ACTIONS` in `packages/db/src/repositories/audit.ts`), each naming the backlog item that emits it | `context.test.ts` audit coverage test |
 | T11 | DoS / cost abuse on LLM | Budget | On-demand runs ≤ 3/shop/day; chat ≤ 30 messages/shop/day; per-shop monthly token budget; Vercel Firewall rate rules on `/api/*` | Load test on preview |
 | T12 | Supply-chain compromise | All | Lockfile, Dependabot, `pnpm audit` in CI, pinned GitHub Actions by SHA, minimal deps in `parsers` (runs on seller devices) | CI |
 
