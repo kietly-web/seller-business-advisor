@@ -32,6 +32,8 @@ Real seller data never leaves production: no production snapshots in preview, an
 
 Each cron route checks `Authorization: Bearer ${CRON_SECRET}`, which Vercel sends automatically when the env var is set.
 
+As built (SA-109): `/api/cron/drain` calls `runDueJobs` (`packages/db/src/jobs.ts`) with the handler registry in `apps/web/server/jobs.ts`, and returns `401` unless `CRON_SECRET` is set and matches (constant-time compare). The schedule is **not registered yet**: the Vercel project is on the Hobby plan, which only allows daily cron jobs, so the every-minute drain waits for the Pro decision (Q-I1). Until then the route can be called manually with the secret.
+
 ### Job runner
 
 ```sql
