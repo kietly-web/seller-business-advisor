@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm';
-import { check, date, integer, jsonb, primaryKey, text, unique, uuid } from 'drizzle-orm/pg-core';
+import { check, date, foreignKey, integer, jsonb, primaryKey, text, unique, uuid } from 'drizzle-orm/pg-core';
 import { app, createdAt, id, tstz } from './columns';
 import { shop } from './tenancy';
 
@@ -26,6 +26,7 @@ export const upload = app.table(
   },
   (t) => [
     unique('upload_shop_file_unique').on(t.shopId, t.fileSha256),
+    unique('upload_shop_id_unique').on(t.shopId, t.id),
     check('upload_status_check', sql`${t.status} in ('receiving', 'parsed', 'failed', 'superseded')`),
   ],
 );
@@ -33,9 +34,7 @@ export const upload = app.table(
 export const ingestStage = app.table(
   'ingest_stage',
   {
-    uploadId: uuid('upload_id')
-      .notNull()
-      .references(() => upload.id, { onDelete: 'cascade' }),
+    uploadId: uuid('upload_id').notNull(),
     shopId: uuid('shop_id')
       .notNull()
       .references(() => shop.id, { onDelete: 'cascade' }),
@@ -44,7 +43,8 @@ export const ingestStage = app.table(
     record: jsonb('record').notNull(),
   },
   (t) => [
-    primaryKey({ columns: [t.uploadId, t.recordKind, t.sourceRow] }),
+    primaryKey({ columns: [t.shopId, t.uploadId, t.recordKind, t.sourceRow] }),
+    foreignKey({ name: 'ingest_stage_upload_fk', columns: [t.shopId, t.uploadId], foreignColumns: [upload.shopId, upload.id] }).onDelete('cascade'),
     check(
       'ingest_stage_kind_check',
       sql`${t.recordKind} in ('order_line', 'fee_line', 'product_traffic', 'sku', 'stock')`,

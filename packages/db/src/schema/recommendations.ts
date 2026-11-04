@@ -2,6 +2,7 @@ import { sql } from 'drizzle-orm';
 import {
   boolean,
   check,
+  foreignKey,
   index,
   integer,
   jsonb,
@@ -23,9 +24,7 @@ export const skuWeekMetric = app.table(
     shopId: uuid('shop_id')
       .notNull()
       .references(() => shop.id, { onDelete: 'cascade' }),
-    skuId: uuid('sku_id')
-      .notNull()
-      .references(() => sku.id, { onDelete: 'cascade' }),
+    skuId: uuid('sku_id').notNull(),
     isoWeek: text('iso_week').notNull(),
     units: integer('units').notNull(),
     orders: integer('orders').notNull(),
@@ -49,6 +48,7 @@ export const skuWeekMetric = app.table(
   },
   (t) => [
     primaryKey({ columns: [t.shopId, t.skuId, t.isoWeek] }),
+    foreignKey({ name: 'sku_week_metric_sku_fk', columns: [t.shopId, t.skuId], foreignColumns: [sku.shopId, sku.id] }).onDelete('cascade'),
     check('sku_week_metric_week_check', sql`${t.isoWeek} ~ '^[0-9]{4}-W[0-9]{2}$'`),
   ],
 );
@@ -70,6 +70,7 @@ export const recommendationRun = app.table(
     finishedAt: tstz('finished_at'),
   },
   (t) => [
+    unique('recommendation_run_shop_id_unique').on(t.shopId, t.id),
     check('recommendation_run_trigger_check', sql`${t.trigger} in ('weekly', 'on_demand')`),
     check(
       'recommendation_run_status_check',
@@ -85,10 +86,8 @@ export const recommendation = app.table(
     shopId: uuid('shop_id')
       .notNull()
       .references(() => shop.id, { onDelete: 'cascade' }),
-    runId: uuid('run_id')
-      .notNull()
-      .references(() => recommendationRun.id, { onDelete: 'cascade' }),
-    skuId: uuid('sku_id').references(() => sku.id, { onDelete: 'cascade' }),
+    runId: uuid('run_id').notNull(),
+    skuId: uuid('sku_id'),
     ruleCode: text('rule_code').notNull(),
     ruleVersion: integer('rule_version').notNull(),
     actionType: text('action_type').notNull(),
@@ -110,6 +109,9 @@ export const recommendation = app.table(
   },
   (t) => [
     index('recommendation_shop_run_idx').on(t.shopId, t.runId),
+    unique('recommendation_shop_id_unique').on(t.shopId, t.id),
+    foreignKey({ name: 'recommendation_run_fk', columns: [t.shopId, t.runId], foreignColumns: [recommendationRun.shopId, recommendationRun.id] }).onDelete('cascade'),
+    foreignKey({ name: 'recommendation_sku_fk', columns: [t.shopId, t.skuId], foreignColumns: [sku.shopId, sku.id] }).onDelete('cascade'),
     check('recommendation_rank_check', sql`${t.rank} between 1 and 5`),
     check('recommendation_confidence_check', sql`${t.confidence} in ('low', 'medium', 'high')`),
     check('recommendation_text_source_check', sql`${t.textSource} in ('llm', 'template')`),
@@ -124,9 +126,7 @@ export const recommendation = app.table(
 export const outcome = app.table(
   'outcome',
   {
-    recommendationId: uuid('recommendation_id')
-      .notNull()
-      .references(() => recommendation.id, { onDelete: 'cascade' }),
+    recommendationId: uuid('recommendation_id').notNull(),
     shopId: uuid('shop_id')
       .notNull()
       .references(() => shop.id, { onDelete: 'cascade' }),
@@ -139,7 +139,8 @@ export const outcome = app.table(
     measuredAt: timestamp('measured_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    primaryKey({ columns: [t.recommendationId, t.horizonDays] }),
+    primaryKey({ columns: [t.shopId, t.recommendationId, t.horizonDays] }),
+    foreignKey({ name: 'outcome_recommendation_fk', columns: [t.shopId, t.recommendationId], foreignColumns: [recommendation.shopId, recommendation.id] }).onDelete('cascade'),
     check('outcome_horizon_check', sql`${t.horizonDays} in (7, 14)`),
     check(
       'outcome_result_check',
