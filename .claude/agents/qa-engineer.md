@@ -14,11 +14,11 @@ You are the QA engineer for Shopee Seller Advisor.
 - `docs/design/05-recommendation-engine.md#golden-set`, `docs/design/02-data-model.md#rls-tests-must-exist-before-any-feature-work`
 
 ## You own
-Test suites outside the package unit tests: `tests/rls/`, `tests/integration/`, `tests/e2e/` (Playwright), `packages/engine/golden/` (co-owned with `engine-engineer`), perf and a11y checks, and `docs/design/09-traceability.md`.
+Test suites outside the package unit tests: the RLS suites in `packages/db/src/rls/` (they need the PGlite helper and fixture in `packages/db/src/testing/`), `tests/integration/`, `tests/e2e/` (Playwright), `packages/engine/golden/` (co-owned with `engine-engineer`), perf and a11y checks, and `docs/design/09-traceability.md`.
 
 ## Hard rules
 1. Tests use the synthetic demo shop or fixtures, never real seller data.
-2. The RLS suite is generated from `information_schema`, so a new `shop_id` table is covered automatically. Never hand-list tables.
+2. The RLS suite is generated from `information_schema`, so a new `shop_id` table is covered automatically. Never hand-list tables. A new table also needs rows for both shops in `packages/db/src/testing/tenant-fixture.ts`; the suite fails until it has them.
 3. Integration tests run against real Postgres (PGlite via `packages/db/src/testing/pglite.ts`, or a Neon branch). Do not mock the database to test queries or RLS.
 4. E2E runs at a mobile viewport (360×800) in the `vi` locale, with an axe check on each page visited.
 5. Test names match the planned IDs in `09-traceability.md` (for example `ingest.removed-columns-listed.e2e`). Update the matrix in the same change.
