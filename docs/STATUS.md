@@ -1,10 +1,10 @@
 # Project status
 
-Last updated: 05/11/2026 (Slice D) · Update this file in every slice PR (see `CLAUDE.md`, "How we work"). It is the hand-off note for any agent or person joining the work: read it after `CLAUDE.md` and before starting anything.
+Last updated: 05/11/2026 (Slice E) · Update this file in every slice PR (see `CLAUDE.md`, "How we work"). It is the hand-off note for any agent or person joining the work: read it after `CLAUDE.md` and before starting anything.
 
 ## Where we are
 
-**Milestone M1 (data, auth, consent) is complete.** **M2 (ingestion) is complete** with Slices B and C. M3 (see and decide) is in progress: Slice D (profit) is done, Slice E (engine rules) is next.
+**Milestone M1 (data, auth, consent) is complete.** **M2 (ingestion) is complete** with Slices B and C. M3 (see and decide) is in progress: Slices D (profit) and E (engine rules) are done; Slice F (LLM explanations) is next.
 
 | Area | State |
 | --- | --- |
@@ -16,6 +16,7 @@ Last updated: 05/11/2026 (Slice D) · Update this file in every slice PR (see `C
 | Slice B: parser registry, header normalisation, detection, PII allowlist + test, order-ID hashing, synthetic 12-month shop with export writers, `shopee.orders@v1`, `shopee.income@v1` (assumed), `seller.unit_costs@v1`, `seller.stock@v1` + CSV templates (SA-201–204) | Done (PR for `SA-201-parsers`). No real Seller Centre files yet, so both Shopee parsers stay `assumed` |
 | Slice C: upload page `/tai-len` (Web Worker, XLSX via SheetJS + CSV, mapping preview, removed buyer columns shown, progress), ingest service with zod + PII value scan and SQL merge, costs page `/gia-von` (inline edit, missing costs first), CSV templates `/mau/gia-von` and `/mau/ton-kho`, demo shop seeded with 12 months of synthetic data on creation, upload history on `/tong-quan` (SA-205, SA-206, SA-207, SA-209) | Done (PR for `SA-205-upload-flow`). Ingest uses server actions, not REST (ADR-010). Upload resume after reload is not built |
 | Slice D: weekly per-SKU metrics in `packages/engine` (`computeMetrics`, fee and discount allocation that reconciles exactly, earliest-cost backfill), recompute after uploads and cost edits with a content-hash skip, `metrics.recompute` job handler, profit view `/loi-nhuan` with week picker and drill-down `/loi-nhuan/[skuId]` to file name and row (SA-301–304) | Done (PR for `SA-301-profit`). The 50k-lines/quarter compute test and the view read time are covered in tests; p95 on throttled 4G still needs measuring on a working preview |
+| Slice E: rules v1 (7 rules + `COST_MISSING` banner list) with static Vietnamese templates and Seller Centre checklists, scoring with data quality and learned confidence, cooldown/dismissal, one per SKU, two per action type, top 5, data-sufficiency gates and skip reasons, golden set of 22 scenarios (SA-401–403) | Done (PR for `SA-401-engine-rules`). Entry point: `planRecommendations(ctx)` in `packages/engine`. Nothing calls it from the app yet: the weekly run is SA-406 (Slice G) |
 | Process | Lean mode: slices, CI as gate, go-live checklist |
 
 Parsers (`packages/parsers`) work on a `string[][]` table: `detect` → `prepare` (mapping and removed columns, no values read) → seller confirms → `transform` (async, hashes order IDs). File reading (Papa Parse for CSV, SheetJS for XLSX) belongs to the upload worker in SA-206. The synthetic generator is a separate entry, `@sa/parsers/synthetic`, so it stays out of the browser bundle.
@@ -24,7 +25,7 @@ Routes: `/` (landing), `/dang-ky`, `/kiem-tra-email`, `/dang-nhap`, `/dong-y` (c
 
 ## Next
 
-**Slice E: engine** (SA-401–403, `docs/design/08-delivery-plan.md`): rule framework and rules v1 in `packages/engine`, ranking, and the golden set. Build on `computeMetrics` output (`SkuWeekMetric`, including `avgDailyUnits28d`, `onHand`, `stockCoverDays`). Rows exist only for SKU-weeks with completed sales, so rules about zero sales (`DEAD_STOCK`) need stock facts, not metric rows. There's no traffic or competitor data yet, so conversion and price-gap rules must skip cleanly.
+**Slice F: LLM** (SA-404, SA-405, security review required): `LlmClient` with `ClaudeLlmClient` and `TemplateLlmClient`, the payload builder (`packages/llm/src/payload.ts`) from a `RankedCandidate`'s `facts`, placeholder and digit validation, `llm_call` logging, prompt `explain.v1` and adversarial golden cases. Load the `claude-api` skill first. The template fallback already exists: `renderCard(ruleCode, facts)` and `TEMPLATES` in `packages/engine`. Golden scenarios are importable from `packages/engine/src/golden/scenarios.ts` (not exported from the package index; import by path in tests). A new external service (Anthropic API) needs its ADR (ADR-005 exists) and a sub-processor register row before code merges; check `docs/compliance/`.
 
 Known gaps carried forward:
 - If demo seeding fails or times out, the demo shop stays empty and isn't reseeded.
@@ -37,7 +38,7 @@ Known gaps carried forward:
 | PR | What | Action |
 | --- | --- | --- |
 | #22 | Dependabot minor/patch group | Merge if CI is green |
-| (this slice) | Slice D profit, `SA-301-profit` | Merge when CI is green |
+| (this slice) | Slice E engine rules, `SA-401-engine-rules` | Merge when CI is green |
 
 ## Waiting on the owner
 
