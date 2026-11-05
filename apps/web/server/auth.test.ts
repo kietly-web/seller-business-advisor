@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import type { PGlite } from '@electric-sql/pglite';
 import { createTestDb } from '@sa/db/testing';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
@@ -21,6 +21,7 @@ class CapturingSender implements EmailSender {
 }
 
 const PASSWORD = 'mua-he-o-da-lat-2026';
+const TEST_SECRET = randomBytes(32).toString('hex');
 
 let client: PGlite;
 let email: CapturingSender;
@@ -34,7 +35,7 @@ beforeAll(async () => {
     db: test.db,
     email,
     baseURL: 'http://localhost:3000',
-    secret: 'test-secret-that-is-at-least-32-characters-long',
+    secret: TEST_SECRET,
     checkBreachedPasswords: false,
   });
 });
@@ -104,7 +105,7 @@ describe('breached-password check', () => {
       db: (await createTestDb()).db,
       email: new CapturingSender(),
       baseURL: 'http://localhost:3000',
-      secret: 'test-secret-that-is-at-least-32-characters-long',
+      secret: TEST_SECRET,
       checkBreachedPasswords: true,
     });
     const sha1 = createHash('sha1').update('password123').digest('hex').toUpperCase();
