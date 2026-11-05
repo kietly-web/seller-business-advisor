@@ -11,5 +11,8 @@
   },
   "dependencies": {
     "@sa/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@sa/parsers": "workspace:*"
   }
 }

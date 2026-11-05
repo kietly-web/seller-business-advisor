@@ -7,3 +7,4 @@ export * from './repositories/audit';
 export * from './jobs';
 export * from './repositories/ingest';
 export * from './repositories/costs';
+export * from './repositories/metrics';

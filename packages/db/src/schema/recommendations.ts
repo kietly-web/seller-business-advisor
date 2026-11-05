@@ -48,6 +48,7 @@ export const skuWeekMetric = app.table(
   },
   (t) => [
     primaryKey({ columns: [t.shopId, t.skuId, t.isoWeek] }),
+    index('sku_week_metric_shop_week_idx').on(t.shopId, t.isoWeek),
     foreignKey({ name: 'sku_week_metric_sku_fk', columns: [t.shopId, t.skuId], foreignColumns: [sku.shopId, sku.id] }).onDelete('cascade'),
     check('sku_week_metric_week_check', sql`${t.isoWeek} ~ '^[0-9]{4}-W[0-9]{2}$'`),
   ],
