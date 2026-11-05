@@ -3,11 +3,30 @@
     "name": "Seller Advisor",
     "tagline": "Mỗi tuần vài việc nên làm để shop Shopee của bạn có lãi hơn, dựa trên số liệu của chính bạn.",
     "demoBadge": "Dữ liệu mẫu",
-    "signOut": "Đăng xuất"
+    "signOut": "Đăng xuất",
+    "title": "Seller Advisor: trợ lý lợi nhuận cho người bán Shopee",
+    "description": "Tính lợi nhuận thật của từng sản phẩm sau phí sàn và giá vốn, rồi gợi ý mỗi tuần vài việc nên làm để shop Shopee có lãi hơn. Dữ liệu người mua không bao giờ rời khỏi máy bạn."
   },
   "home": {
-    "signUp": "Tạo tài khoản",
-    "signIn": "Đăng nhập"
+    "signUp": "Tạo tài khoản miễn phí",
+    "signIn": "Đăng nhập",
+    "heading": "Biết sản phẩm nào thật sự có lãi, và tuần này nên làm gì",
+    "lead": "Seller Advisor đọc file đơn hàng bạn xuất từ Shopee Seller Centre, trừ phí sàn và giá vốn, rồi đưa ra tối đa 5 việc nên làm mỗi tuần, kèm lý do và con số.",
+    "benefitsTitle": "Bạn nhận được gì",
+    "benefits": [
+      "Lợi nhuận thật của từng sản phẩm mỗi tuần, sau phí cố định, phí giao dịch, mã giảm giá và giá vốn.",
+      "Tối đa 5 việc nên làm mỗi tuần: tăng hay giảm giá, nhập thêm hàng, xả hàng tồn, có nên tham gia chiến dịch.",
+      "Theo dõi kết quả sau 7 và 14 ngày, để biết gợi ý nào thật sự giúp bạn có lãi hơn."
+    ],
+    "stepsTitle": "Cách hoạt động",
+    "steps": [
+      "Xuất file đơn hàng và doanh thu từ Shopee Seller Centre.",
+      "Tải lên và nhập giá vốn sản phẩm.",
+      "Mỗi thứ Hai, xem danh sách việc nên làm và tự quyết định."
+    ],
+    "privacyTitle": "Dữ liệu của bạn",
+    "privacy": "Tên, số điện thoại và địa chỉ người mua được xoá ngay trên máy bạn trước khi tải lên. Chúng tôi không thay đổi gì trong shop Shopee của bạn: mọi quyết định do bạn thực hiện.",
+    "aiNote": "Phần giải thích được viết bởi AI; mọi con số đều được tính từ dữ liệu của bạn."
   },
   "signUp": {
     "title": "Tạo tài khoản",

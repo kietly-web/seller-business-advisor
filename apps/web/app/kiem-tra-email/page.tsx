@@ -1,5 +1,9 @@
+import type { Metadata } from 'next';
+import { noIndex } from '../../lib/site';
 import Link from 'next/link';
 import { t } from '../../lib/messages';
+
+export const metadata: Metadata = { title: t.checkEmail.title, ...noIndex };
 
 export default function CheckEmailPage() {
   return (

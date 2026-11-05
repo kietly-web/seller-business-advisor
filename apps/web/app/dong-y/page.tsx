@@ -1,9 +1,13 @@
+import type { Metadata } from 'next';
+import { noIndex } from '../../lib/site';
 import { appDb } from '@sa/db';
 import { redirect } from 'next/navigation';
 import { t } from '../../lib/messages';
 import { hasServiceConsent } from '../../server/consents';
 import { requireUser } from '../../server/session';
 import { ConsentGateForm } from './consent-gate-form';
+
+export const metadata: Metadata = { title: t.consentGate.title, ...noIndex };
 
 export const dynamic = 'force-dynamic';
 

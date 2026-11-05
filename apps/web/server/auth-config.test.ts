@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { assertProductionAuthConfig } from './auth-config';
+import { AuthNotConfiguredError, assertProductionAuthConfig } from './auth-config';
 
 const good = {
   NODE_ENV: 'production',
@@ -20,6 +20,10 @@ describe('assertProductionAuthConfig', () => {
     ['no SES config', { AWS_SES_REGION: undefined }, 'AWS_SES_REGION and EMAIL_FROM'],
   ])('rejects %s', (_label, override, message) => {
     expect(() => assertProductionAuthConfig({ ...good, ...override })).toThrow(message);
+  });
+
+  it('throws a typed error so public pages can degrade', () => {
+    expect(() => assertProductionAuthConfig({ NODE_ENV: 'production' })).toThrow(AuthNotConfiguredError);
   });
 
   it('does not apply outside production', () => {

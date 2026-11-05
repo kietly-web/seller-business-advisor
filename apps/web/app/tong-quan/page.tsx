@@ -1,7 +1,11 @@
+import type { Metadata } from 'next';
+import { noIndex } from '../../lib/site';
 import Link from 'next/link';
 import { t } from '../../lib/messages';
 import { requireShop } from '../../server/session';
 import { signOutAction } from '../actions/auth';
+
+export const metadata: Metadata = { title: t.dashboard.title, ...noIndex };
 
 export const dynamic = 'force-dynamic';
 

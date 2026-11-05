@@ -53,5 +53,7 @@ Routes: `/` (landing), `/dang-ky`, `/kiem-tra-email`, `/dang-nhap`, `/dong-y` (c
 - **gitleaks** flags secret-looking literals in tests; generate test secrets at runtime.
 - If `git push` fails with `could not read Username`, push with gh's login for that command only: `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`. Don't change the global git config.
 - **`server-only`** throws when imported in Vitest; keep testable logic in modules that don't import it.
+- **SEO is on** (owner's decision, 05/11/2026): public pages `/`, `/dang-ky`, `/dang-nhap` are indexable with `robots.txt` and `sitemap.xml`; signed-in pages carry `noindex` and are disallowed. Public pages render as signed-out when auth isn't configured (`getOptionalSessionUser`); signed-in pages still fail loudly.
+- `smoke.yml` checks the production domain after every production deploy (`/`, `/dang-ky`, `/robots.txt`, `/sitemap.xml` must return 200). Previews are skipped until the Vercel bypass secret exists. CI's build passing doesn't prove pages render; this does.
 - Sign-up/sign-in can't work on Vercel yet: production auth env isn't set, and `BETTER_AUTH_URL` must match each deployment's origin (Better Auth's origin check), so previews need their own value.
 - Project agent files added mid-session aren't available until a new session starts; use a general-purpose agent pointed at the agent file instead.
