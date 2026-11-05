@@ -1,37 +1,30 @@
-name: Smoke check deployment
+name: Smoke check production
 
-on: deployment_status
+# Vercel reports deployments to GitHub as a commit status named "Vercel", not as GitHub Deployments
+on:
+  status:
+  workflow_dispatch:
 
 permissions: {}
 
 jobs:
   smoke:
-    if: github.event.deployment_status.state == 'success'
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.context == 'Vercel' && github.event.state == 'success' &&
+       contains(github.event.branches.*.name, 'main'))
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
       - name: Public pages return 200
         env:
-          ENVIRONMENT: ${{ github.event.deployment.environment }}
-          DEPLOYMENT_URL: ${{ github.event.deployment_status.environment_url || github.event.deployment_status.target_url }}
-          PRODUCTION_URL: ${{ vars.PRODUCTION_URL || 'https://seller-business-advisor.vercel.app' }}
-          BYPASS: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+          BASE: ${{ vars.PRODUCTION_URL || 'https://seller-business-advisor.vercel.app' }}
         run: |
-          if [ "$ENVIRONMENT" = "Production" ]; then
-            base="$PRODUCTION_URL"
-          elif [ -n "$BYPASS" ]; then
-            base="$DEPLOYMENT_URL"
-          else
-            echo "::notice::Preview deployments are behind Vercel Authentication; add VERCEL_AUTOMATION_BYPASS_SECRET to smoke-test them."
-            exit 0
-          fi
-          headers=()
-          if [ -n "$BYPASS" ]; then headers=(-H "x-vercel-protection-bypass: $BYPASS"); fi
           failed=0
           for path in / /dang-ky /robots.txt /sitemap.xml; do
             code=000
             for attempt in 1 2 3; do
-              code=$(curl -s -o /dev/null -w '%{http_code}' "${headers[@]}" "${base%/}$path")
+              code=$(curl -s -o /dev/null -w '%{http_code}' "${BASE%/}$path")
               [ "$code" = "200" ] && break
               sleep 10
             done
@@ -39,6 +32,6 @@ jobs:
             if [ "$code" != "200" ]; then failed=1; fi
           done
           if [ "$failed" = 1 ]; then
-            echo "::error::A public page did not return 200 on $ENVIRONMENT ($base)."
+            echo "::error::A public page on $BASE did not return 200."
             exit 1
           fi
