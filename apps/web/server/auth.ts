@@ -1,9 +1,11 @@
 import { account, rateLimit, session, twoFactor as twoFactorTable, user, verification, type Db } from '@sa/db';
 import { betterAuth } from 'better-auth';
+import { APIError, createAuthMiddleware } from 'better-auth/api';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { nextCookies } from 'better-auth/next-js';
 import { haveIBeenPwned } from 'better-auth/plugins/haveibeenpwned';
 import { twoFactor } from 'better-auth/plugins/two-factor';
+import { parseConsentChoices, recordSignUpConsents } from './consents';
 import { existingAccountEmail, verificationEmail, type EmailSender } from './email';
 
 const DAY = 60 * 60 * 24;
@@ -59,6 +61,29 @@ export function createAuth(deps: AuthDeps) {
       expiresIn: 60 * 60,
       sendVerificationEmail: async ({ user: u, url }) => {
         await deps.email.send(verificationEmail(u.email, url));
+      },
+    },
+    hooks: {
+      before: createAuthMiddleware(async (ctx) => {
+        if (ctx.path !== '/sign-up/email') {
+          return;
+        }
+        const choices = parseConsentChoices((ctx.body as Record<string, unknown> | undefined)?.consents);
+        if (!choices?.service_processing) {
+          throw new APIError('BAD_REQUEST', { code: 'SERVICE_CONSENT_REQUIRED', message: 'Service consent is required' });
+        }
+      }),
+    },
+    databaseHooks: {
+      user: {
+        create: {
+          after: async (created, context) => {
+            const choices = parseConsentChoices((context?.body as Record<string, unknown> | undefined)?.consents);
+            if (choices) {
+              await recordSignUpConsents(deps.db, created.id, choices, context?.request?.headers.get('user-agent') ?? null);
+            }
+          },
+        },
       },
     },
     plugins: [

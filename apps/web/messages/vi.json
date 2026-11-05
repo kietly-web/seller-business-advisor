@@ -1,0 +1,97 @@
+{
+  "app": {
+    "name": "Seller Advisor",
+    "tagline": "Mỗi tuần vài việc nên làm để shop Shopee của bạn có lãi hơn, dựa trên số liệu của chính bạn.",
+    "demoBadge": "Dữ liệu mẫu",
+    "signOut": "Đăng xuất"
+  },
+  "home": {
+    "signUp": "Tạo tài khoản",
+    "signIn": "Đăng nhập"
+  },
+  "signUp": {
+    "title": "Tạo tài khoản",
+    "name": "Tên của bạn",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "passwordHint": "Ít nhất 8 ký tự.",
+    "consentsLegend": "Đồng ý xử lý dữ liệu",
+    "consentsHint": "Mỗi mục là một lựa chọn riêng. Chỉ mục đầu tiên là bắt buộc.",
+    "submit": "Tạo tài khoản",
+    "haveAccount": "Đã có tài khoản?",
+    "signInLink": "Đăng nhập"
+  },
+  "consents": {
+    "service_processing": "Tôi đồng ý để Seller Advisor xử lý dữ liệu kinh doanh tôi tải lên (đơn hàng, phí, giá vốn) để tính lợi nhuận và gợi ý việc nên làm. Bắt buộc để dùng dịch vụ.",
+    "anonymised_benchmarking": "Tôi đồng ý để số liệu của shop được ẩn danh và gộp với các shop khác để so sánh theo ngành hàng. Không bắt buộc.",
+    "marketing": "Tôi muốn nhận email về tính năng mới. Không bắt buộc."
+  },
+  "checkEmail": {
+    "title": "Kiểm tra email của bạn",
+    "body": "Nếu email hợp lệ, chúng tôi vừa gửi một liên kết xác nhận. Bấm vào liên kết để kích hoạt tài khoản. Liên kết hết hạn sau 1 giờ.",
+    "signInLink": "Đến trang đăng nhập"
+  },
+  "signIn": {
+    "title": "Đăng nhập",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "submit": "Đăng nhập",
+    "noAccount": "Chưa có tài khoản?",
+    "signUpLink": "Tạo tài khoản"
+  },
+  "onboarding": {
+    "title": "Thiết lập shop",
+    "intro": "Cho chúng tôi biết về shop của bạn. Bạn có thể đổi lại sau.",
+    "shopName": "Tên shop",
+    "category": "Ngành hàng chính",
+    "targetMargin": "Biên lợi nhuận mục tiêu (%)",
+    "targetMarginHint": "Lợi nhuận sau phí và giá vốn bạn muốn đạt trên mỗi đơn. Nhiều shop chọn 15%.",
+    "submit": "Tạo shop",
+    "demoTitle": "Chưa có số liệu?",
+    "demoBody": "Xem thử bằng một shop mẫu với dữ liệu giả lập. Bạn vẫn tạo được shop thật sau.",
+    "demoSubmit": "Dùng shop mẫu",
+    "demoShopName": "Shop mẫu"
+  },
+  "categories": {
+    "nha_cua_doi_song": "Nhà cửa & Đời sống",
+    "thoi_trang": "Thời trang",
+    "sac_dep": "Sắc đẹp",
+    "phu_kien_dien_tu": "Phụ kiện điện tử",
+    "me_va_be": "Mẹ & Bé",
+    "thuc_pham": "Thực phẩm & Đồ uống",
+    "khac": "Khác"
+  },
+  "dashboard": {
+    "title": "Tổng quan",
+    "welcome": "Shop đã sẵn sàng. Bước tiếp theo: tải lên file đơn hàng xuất từ Shopee (sắp có).",
+    "settingsLink": "Cài đặt"
+  },
+  "settings": {
+    "title": "Cài đặt",
+    "consentsTitle": "Đồng ý xử lý dữ liệu",
+    "serviceNote": "Đồng ý xử lý dữ liệu là bắt buộc để dùng dịch vụ. Muốn rút lại, hãy xoá tài khoản (tính năng sắp có).",
+    "save": "Lưu lựa chọn",
+    "saved": "Đã lưu.",
+    "backLink": "Về trang tổng quan"
+  },
+  "errors": {
+    "required": "Vui lòng điền mục này.",
+    "invalidEmail": "Email không hợp lệ.",
+    "passwordTooShort": "Mật khẩu cần ít nhất 8 ký tự.",
+    "passwordTooLong": "Mật khẩu tối đa 128 ký tự.",
+    "serviceConsentRequired": "Bạn cần đồng ý xử lý dữ liệu kinh doanh để dùng dịch vụ.",
+    "passwordCompromised": "Mật khẩu này đã xuất hiện trong các vụ lộ dữ liệu. Vui lòng chọn mật khẩu khác.",
+    "invalidCredentials": "Email hoặc mật khẩu không đúng.",
+    "emailNotVerified": "Email chưa được xác nhận. Hãy mở liên kết trong email chúng tôi đã gửi.",
+    "rateLimited": "Bạn thử quá nhiều lần. Vui lòng đợi một phút rồi thử lại.",
+    "twoFactorNotSupported": "Tài khoản có bật xác thực hai lớp. Đăng nhập bằng mã xác thực sẽ sớm có.",
+    "invalidMargin": "Nhập một số từ 1 đến 80.",
+    "invalidCategory": "Vui lòng chọn ngành hàng.",
+    "generic": "Đã có lỗi. Vui lòng thử lại."
+  },
+  "consentGate": {
+    "title": "Xác nhận đồng ý xử lý dữ liệu",
+    "body": "Trước khi tiếp tục, vui lòng xác nhận các lựa chọn dưới đây.",
+    "submit": "Tiếp tục"
+  }
+}

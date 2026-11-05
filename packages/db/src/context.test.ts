@@ -6,7 +6,7 @@ import { withContext, withShopContext, withUserContext, type Db, type DbRole } f
 import { AUDIT_ACTIONS, appendAudit, type AuditAction } from './repositories/audit';
 import { currentConsents, recordConsents } from './repositories/consents';
 import { rowsOf } from './repositories/rows';
-import { createShop, listMyShops, renameShop } from './repositories/shops';
+import { createShop, listMyShops, renameShop, ShopAlreadyExistsError } from './repositories/shops';
 import { auditLog, sku } from './schema';
 import { createTestDb } from './testing/pglite';
 
@@ -85,6 +85,26 @@ describe('withShopContext', () => {
 });
 
 describe('shop repository', () => {
+  it('creates the shop, owner membership, settings and audit row in one call', async () => {
+    const owner = asUserId('atomic-owner');
+    const id = await withUserContext(db, owner, (tx) =>
+      createShop(tx, { name: 'Atomic', category: null, isDemo: false, settings: { targetMarginPct: 20 } }),
+    );
+    const rows = rowsOf<{ settings: { targetMarginPct: number }; members: number; audits: number }>(
+      await db.execute(sql`select s.settings,
+        (select count(*)::int from app.shop_member m where m.shop_id = s.id) as members,
+        (select count(*)::int from app.audit_log a where a.shop_id = s.id and a.action = 'shop.created') as audits
+        from app.shop s where s.id = ${id}`),
+    );
+    expect(rows[0]).toEqual({ settings: { targetMarginPct: 20 }, members: 1, audits: 1 });
+  });
+
+  it('refuses a second owned shop for the same user', async () => {
+    await expect(
+      withUserContext(db, asUserId('atomic-owner'), (tx) => createShop(tx, { name: 'Again', category: null, isDemo: true })),
+    ).rejects.toBeInstanceOf(ShopAlreadyExistsError);
+  });
+
   it('lists only the caller’s shops', async () => {
     const shops = await withUserContext(db, OWNER_A, listMyShops);
     expect(shops.map((s) => s.id)).toEqual([shopA]);
@@ -129,9 +149,9 @@ describe('audit repository', () => {
       appendAudit(tx, { shopId: shopA, actor: OWNER_A, action: 'shop.renamed', entityId: shopA }),
     );
     const rows = await withShopContext(db, { role: 'sa_app', shopId: shopA, userId: OWNER_A }, (tx) =>
-      tx.select({ action: auditLog.action }).from(auditLog),
+      tx.select({ action: auditLog.action }).from(auditLog).orderBy(auditLog.id),
     );
-    expect(rows).toEqual([{ action: 'shop.renamed' }]);
+    expect(rows).toEqual([{ action: 'shop.created' }, { action: 'shop.renamed' }]);
   });
 
   it('refuses an action outside the catalogue', async () => {

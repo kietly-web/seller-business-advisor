@@ -7,7 +7,7 @@ Each requirement maps to the design section that answers it, the backlog items t
 | Req | Design | Backlog | Tests (planned) |
 | --- | --- | --- | --- |
 | FR-01 Sign up email/Google, verify | 03 Auth, ADR-007, ADR-009 | SA-105 (email; Google follows) | `apps/web/server/auth.test.ts` (sign-up, unverified sign-in refused, verify link, password hashing, min length, HIBP, TOTP enrolment, duplicate sign-up, 14-day session, sign-in rate limit), `apps/web/server/email.test.ts`, `apps/web/server/auth-config.test.ts`, auth-schema isolation in `packages/db/src/rls/policies.test.ts`; `auth.signup.e2e` with SA-106 UI |
-| FR-02 Separate unticked consents | 03 Consent, 02 `consent_record` | SA-106 | `consent.unticked-default.e2e`, `consent.ledger-append-only.int` |
+| FR-02 Separate unticked consents | 03 Consent, 02 `consent_record` | SA-106 | `apps/web/server/auth.test.ts` "consents at sign-up" (required consent enforced server-side, ledger with policy version + text hash, none for duplicates), `apps/web/server/onboarding.test.ts` "consent settings", `packages/db/src/rls/policies.test.ts` (append-only); `consent.unticked-default.e2e` with SA-507 |
 | FR-03 Upload, detect, preview, reject unknown | 04 Pipeline, Upload API | SA-201, SA-203, SA-205, SA-206 | `parsers.detect.*.unit`, `ingest.reject-unknown.e2e` |
 | FR-04 Strip buyer PII in browser, show removed | 04 Allowlist, ADR-003 | SA-201, SA-205, SA-206 | `parsers.pii-never-mapped.unit`, `parsers.synthetic-buyer-cols-dropped.unit`, `ingest.pii-suspected-reject.int` |
 | FR-05 Unit costs template + inline | 04 Unit-cost template | SA-204, SA-207 | `parsers.unit-costs.unit`, `costs.inline-edit.e2e` |
@@ -17,7 +17,7 @@ Each requirement maps to the design section that answers it, the backlog items t
 | FR-09 Accept/dismiss/done; 7/14-day outcome | 05 Outcome, 01 F3 | SA-407, SA-501 | `outcome.classify.unit`, `outcome.clock-sim.int` |
 | FR-10 Competitor tracker, price-gap signals | 05 metrics, 02 competitor tables | SA-408, SA-401 | `competitor.median.unit`, `golden.price-gap` |
 | FR-11 Export and delete | 03 DSR, 01 F4 | SA-502, SA-503 | `dsr.export.int`, `dsr.delete-within-20d.int` |
-| FR-12 Demo shop | 04 Synthetic | SA-107, SA-202, SA-209 | `demo.seed.int`, `demo.labelled.e2e` |
+| FR-12 Demo shop | 04 Synthetic | SA-107, SA-202, SA-209 | `apps/web/server/onboarding.test.ts` (demo shop flagged); `demo.seed.int` with SA-209, `demo.labelled.e2e` with SA-507 |
 | FR-13 Chat (Should) | 06 Chat | SA-603 | `golden.chat.*` (later) |
 | FR-14 What-if (Should) | 05 What-if | SA-602 | `engine.whatif.unit` (later) |
 | FR-15 Email digest (Should) | 01 F2 | SA-601 | `digest.render.unit` (later) |
@@ -41,7 +41,7 @@ Each requirement maps to the design section that answers it, the backlog items t
 
 | Story | Acceptance tests (planned) |
 | --- | --- |
-| US-01 | `consent.unticked-default.e2e`, `consent.required-blocks-submit.e2e`, `consent.ledger-append-only.int` |
+| US-01 | `apps/web/server/auth.test.ts` ("consents at sign-up"), `apps/web/server/onboarding.test.ts` ("consent settings"); browser e2e (`consent.unticked-default.e2e`, `consent.required-blocks-submit.e2e`) with SA-507 |
 | US-02 | `ingest.detect-and-preview.e2e`, `ingest.removed-columns-listed.e2e`, `ingest.reject-unknown.e2e` |
 | US-03 | `costs.template-roundtrip.e2e`, `engine.missing-cost-excluded.unit` |
 | US-04 | `profit.view.e2e`, `profit.drilldown-source-rows.e2e` |
