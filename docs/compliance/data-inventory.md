@@ -39,7 +39,7 @@ Not held anywhere: buyer name, phone, email, address, username, notes or raw Sho
 | Neon (database) | C1, C2 at rest | Singapore | Cross-border |
 | Anthropic (LLM) | Per-SKU aggregate facts and product names only | Outside Vietnam, to confirm (Q-T2) | Cross-border |
 | Google (sign-in) | Email, name | Global | Cross-border |
-| Email provider (Q-I2, undecided) | Email address, message content | To decide | Cross-border unless VN-hosted |
+| Amazon SES (email, ADR-009) | Email address, message content | Singapore | Cross-border |
 
 A transfer impact assessment covering these recipients is due within 60 days of starting processing (SA-508; **counsel** for timing and form).
 

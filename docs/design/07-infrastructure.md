@@ -76,7 +76,8 @@ On failure: `run_after = now() + 2^attempts minutes` and `last_error` recorded. 
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | all | Separate OAuth clients for preview and production |
 | `ANTHROPIC_API_KEY` | all | Separate keys and spend limits per environment |
 | `LLM_MODEL_EXPLAIN`, `LLM_MODEL_CHAT` | all | Defaults `claude-opus-5-5` |
-| `EMAIL_*` | all | Provider TBD |
+| `AWS_SES_REGION`, `EMAIL_FROM` | all | SES `ap-southeast-1` and the verified sender (ADR-009). Without them only local dev logs emails; elsewhere sign-up refuses to send |
+| `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | all | IAM user limited to `ses:SendEmail` from `EMAIL_FROM` |
 | `ERROR_TRACKING_DSN` | all | Provider TBD |
 | `CRON_SECRET` | all | Random, rotated quarterly |
 
@@ -120,6 +121,6 @@ Alerts (email to the operator at first): job dead-lettered, LLM fallback rate > 
 | ID | Decision | Options | Lean |
 | --- | --- | --- | --- |
 | Q-I1 | Vercel plan | Hobby (dev only) vs Pro | Pro before beta |
-| Q-I2 | Email provider | Resend, Amazon SES `ap-southeast-1`, Postmark | SES in Singapore keeps C2 in the same region as Neon; Resend is the simplest to set up |
+| Q-I2 | Email provider | Decided 05/11/2026: Amazon SES `ap-southeast-1` | ADR-009 |
 | Q-I3 | Error tracking | Sentry, Vercel's built-in, none in alpha | Start with structured logs; add Sentry with PII scrubbing before beta |
 | Q-I4 | VN cloud fallback quote (R1) | Viettel IDC, VNPT, FPT Smart Cloud, CMC managed Postgres | Get one quote in M0; storage swap plan in ADR-002 |

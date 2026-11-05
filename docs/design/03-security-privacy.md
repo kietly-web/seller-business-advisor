@@ -86,7 +86,8 @@ The stack places data outside Vietnam: Neon and Vercel are in Singapore, and Ant
 | Neon | Database | C1, C2 | Singapore (`aws-ap-southeast-1`) | Decided |
 | Anthropic | LLM explanations, chat | C1 aggregates only | Confirm (Q-T2) | Decided provider; terms to confirm |
 | Google | OAuth sign-in | C2 (email, name) | Global | Decided |
-| Email provider | Verification, digest | C2 (email) | Choose one with an SG/AP region if possible | Open (07) |
+| Amazon SES | Verification, digest | C2 (email address, message) | Singapore (`ap-southeast-1`) | Decided (ADR-009) |
+| Have I Been Pwned (range API) | Breached-password check | None: 5-character SHA-1 prefix only | Global | Decided (ADR-009); a data flow, not a sub-processor |
 | Error tracking | Exceptions | C2 scrubbed | Choose (07) | Open |
 
 Each new sub-processor needs an ADR, an update to this register and the privacy policy, and a change notice to sellers.

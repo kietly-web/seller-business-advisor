@@ -5,3 +5,4 @@ export * from './catalogue';
 export * from './inputs';
 export * from './recommendations';
 export * from './ops';
+export * from './auth';
