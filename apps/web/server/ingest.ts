@@ -5,6 +5,7 @@ import {
   createUpload,
   listUploads,
   DuplicateUploadError,
+  enqueueJob,
   stageRecords,
   UploadStateError,
   withShopContext,
@@ -138,11 +139,23 @@ export async function finishUpload(
       }),
     );
     if (options.recompute !== false) {
-      await recomputeMetrics(db, who);
+      await recomputeOrQueue(db, who);
     }
     return { ok: true, ...result };
   } catch (error) {
     return stateError(error);
+  }
+}
+
+// The upload has committed: a failed recompute must not report the upload as failed
+async function recomputeOrQueue(db: Db, who: Who): Promise<void> {
+  try {
+    await recomputeMetrics(db, who);
+  } catch {
+    console.error(`[metrics] recompute failed shop=${who.shopId}; queued`);
+    await inShop(db, who, (tx) => enqueueJob(tx, { kind: 'metrics.recompute', shopId: who.shopId, dedupeKey: `metrics.recompute:${who.shopId}` })).catch(
+      () => console.error(`[metrics] could not queue recompute shop=${who.shopId}`),
+    );
   }
 }
 

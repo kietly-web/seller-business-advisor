@@ -98,8 +98,8 @@ describe('weekly metrics on the demo shop', () => {
         },
       ], [asSkuId(skuId)]),
     );
-    expect(await scalar("select stock_cover_days::text || '|' || margin_pct::text as v from app.sku_week_metric where iso_week = '2020-W01'")).toBe(
-      '999999.99|-999.9999',
+    expect(await scalar("select stock_cover_days::text || '|' || coalesce(margin_pct::text, '') as v from app.sku_week_metric where iso_week = '2020-W01'")).toBe(
+      '999999.99|',
     );
     const detail = await inShop((tx) => readSkuWeek(tx, who.shopId, asSkuId(skuId), '2020-W01', '2019-12-30', '2020-01-05'));
     expect(detail?.metric?.stockCoverDays).toBe(Number.POSITIVE_INFINITY);
@@ -118,6 +118,7 @@ describe('weekly metrics on the demo shop', () => {
     expect((await weekProfit(db, who, '2026-W40', now)).week).toBe('2026-W40');
     expect((await weekProfit(db, who, "2026-W40' or 1=1", now)).week).toBe('2026-W44');
     expect(await skuWeekDetail(db, who, 'not-a-uuid', '2026-W40')).toBeNull();
+    expect(await skuWeekDetail(db, who, '-'.repeat(36), '2026-W40')).toBeNull();
   });
 });
 

@@ -88,8 +88,13 @@ const clamp = (x: number, limit: number) => Math.max(-limit, Math.min(limit, x))
 export const STOCK_COVER_MAX = 999_999.99;
 
 function fixed(value: number | null, decimals: number, limit: number): string | null {
-  if (value === null) return null;
+  if (value === null || Number.isNaN(value)) return null;
   return clamp(value, limit).toFixed(decimals);
+}
+
+// A ratio beyond the column range isn't a meaningful margin, so it is stored as unknown rather than clamped
+function ratio(value: number | null): string | null {
+  return value === null || !Number.isFinite(value) || Math.abs(value) > 999.9999 ? null : value.toFixed(4);
 }
 
 function stockCover(stored: string | null): number | null {
@@ -111,7 +116,7 @@ function toRow(shopId: ShopId, m: MetricRow) {
     platformFeesVnd: m.platformFeesVnd,
     cogsVnd: m.cogsVnd,
     contributionMarginVnd: m.contributionMarginVnd,
-    marginPct: fixed(m.marginPct, 4, 999.9999),
+    marginPct: ratio(m.marginPct),
     avgSellingPriceVnd: m.avgSellingPriceVnd,
     onHand: m.onHand,
     stockCoverDays: fixed(m.stockCoverDays, 2, STOCK_COVER_MAX),

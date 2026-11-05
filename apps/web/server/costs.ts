@@ -22,7 +22,7 @@ export function parseCostForm(form: FormData): { skuId: string; cogsVnd: bigint;
   const cogs = parseVnd(String(form.get('cogs') ?? ''));
   const packagingRaw = String(form.get('packaging') ?? '').trim();
   const packaging = packagingRaw === '' ? 0n : parseVnd(packagingRaw);
-  if (!/^[0-9a-f-]{36}$/.test(skuId) || cogs === null || packaging === null) return null;
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(skuId) || cogs === null || packaging === null) return null;
   if (cogs < 0n || packaging < 0n || cogs > MAX_VND || packaging > MAX_VND) return null;
   return { skuId, cogsVnd: cogs, packagingVnd: packaging };
 }

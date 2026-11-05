@@ -77,8 +77,13 @@ export async function weekProfit(db: Db, who: Who, requested: unknown, today: Da
 
 export async function skuWeekDetail(db: Db, who: Who, skuIdInput: string, weekInput: unknown): Promise<{ week: IsoWeek; detail: SkuWeekDetail } | null> {
   const week = parseWeek(weekInput);
-  if (!week || !/^[0-9a-f-]{36}$/.test(skuIdInput)) return null;
-  const skuId = asSkuId(skuIdInput);
+  if (!week) return null;
+  let skuId;
+  try {
+    skuId = asSkuId(skuIdInput);
+  } catch {
+    return null;
+  }
   const detail = await inShop(db, who, (tx) => readSkuWeek(tx, who.shopId, skuId, week, weekStart(week), weekEnd(week)));
   return detail ? { week, detail } : null;
 }

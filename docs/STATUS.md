@@ -30,6 +30,7 @@ Known gaps carried forward:
 - If demo seeding fails or times out, the demo shop stays empty and isn't reseeded.
 - Very large order+SKU groups could overflow the merge's `int` sum, which rolls back the merge safely.
 - Upload resume after reload isn't built.
+- Each upload recomputes the whole shop's metrics in memory; fine at demo scale, revisit for very large shops (scope by SKU or move to the job once a cron runs).
 
 ## Open PRs
 
