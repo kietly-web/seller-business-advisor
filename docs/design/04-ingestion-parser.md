@@ -114,14 +114,18 @@ Generated per shop from known SKUs as CSV: an instruction row, then a Vietnamese
 
 ## Upload API
 
-| Endpoint | Purpose | Limits |
-| --- | --- | --- |
-| `POST /api/ingest/uploads` | Create the upload (`export_type`, `parser_id`, `file_sha256`, `file_name`, `removed_columns`, `period`). Returns `upload_id` + `salt` | 1 active upload per shop at a time; duplicate `file_sha256` → 409 with a link to the existing upload |
-| `POST /api/ingest/uploads/:id/chunks` | `{ seq, records: CanonicalRecord[] }` | ≤ 2,000 records, < 1 MB; idempotent on `seq` |
-| `POST /api/ingest/uploads/:id/complete` | Merge, mark `parsed`, enqueue metric recompute | Must have all `seq` 0..n |
-| `DELETE /api/ingest/uploads/:id` | Abort | — |
+The browser calls four Next.js server actions (`apps/web/app/tai-len/actions.ts`) rather than REST routes. Server actions bring Next's origin check against CSRF and a 1 MB body limit. They are thin wrappers over `apps/web/server/ingest.ts`, which the demo-shop seeder also calls, so seeded data goes through the same validation as a seller's file. A Phase 2 server-side adapter calls the same service functions.
 
-On every chunk the server re-validates with the same zod schema (`strict()`, so unknown keys are rejected). As a final net it scans string fields for phone-number and email patterns. A hit rejects the chunk with `PII_SUSPECTED`, logs the event (without the value), and the UI tells the seller to contact support. That situation means a parser bug, and it must be impossible in normal use.
+| Action | Purpose | Limits |
+| --- | --- | --- |
+| `startUpload` | Create the upload (`parser_id`, `file_sha256`, `file_name`, `removed_columns`). Returns `upload_id` + `salt` (base64) | 1 active upload per shop: starting a new one fails any unfinished one. A duplicate `file_sha256` of a parsed upload → `duplicate`. Removed-column names are length-capped and PII-scanned too |
+| `sendChunk` | `(upload_id, records)` | ≤ 1,000 records and ≤ 800 KB (`chunkRecords`); every record must be the upload's kind; idempotent, because the stage key is `(kind, source_row, seq)` with `seq` = fee type for income rows |
+| `finishUpload` | `(upload_id, { expectedRecords, issues })`: merge, mark `parsed`, supersede older uploads fully inside the new period that have no more rows (a smaller file may be a filtered export) | Staged count must equal `expectedRecords`; ≤ 200,000 staged records per upload |
+| `cancelUpload` | Abort | — |
+
+Merge rules: SKUs are upserted by `sku_key`. Order lines are upserted by `(order_hash, sku)`, summing lines for the same order and SKU. An income file replaces every fee of the orders it lists. Unit costs and stock rows only apply to known `sku_key`s; the rest are counted as `UNKNOWN_SKU` in `upload.warnings`. Chunks go one at a time with retries; resuming after a reload (IndexedDB) is not built yet.
+
+On every chunk the server re-validates with the same zod schema (`packages/parsers/src/wire.ts`, strict objects, so unknown keys are rejected). As a final net it scans product names (`itemName`, `variation`) for phone numbers and emails, and SKU codes (`skuKey`, `sellerSku`) for emails only, since 10-digit SKU codes look like phone numbers. File names are scanned too and replaced with a generic name on a hit. A hit in a record rejects the chunk with `PII_SUSPECTED`, aborts the upload, writes an `upload.rejected_pii` audit row, logs the event (without the value), and the UI tells the seller to contact support. That situation means a parser bug, and it must be impossible in normal use.
 
 ## Synthetic data and fixtures
 

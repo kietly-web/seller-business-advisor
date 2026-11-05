@@ -82,8 +82,12 @@
   },
   "dashboard": {
     "title": "Tổng quan",
-    "welcome": "Shop đã sẵn sàng. Bước tiếp theo: tải lên file đơn hàng xuất từ Shopee (sắp có).",
-    "settingsLink": "Cài đặt"
+    "welcome": "Shop đã sẵn sàng. Bước tiếp theo: tải lên file đơn hàng và báo cáo thu nhập xuất từ Shopee, rồi nhập giá vốn.",
+    "settingsLink": "Cài đặt",
+    "uploadLink": "Tải lên dữ liệu",
+    "costsLink": "Giá vốn",
+    "uploadsTitle": "Các lần tải lên gần đây",
+    "noUploads": "Chưa có dữ liệu nào được tải lên."
   },
   "settings": {
     "title": "Cài đặt",
@@ -112,5 +116,70 @@
     "title": "Xác nhận đồng ý xử lý dữ liệu",
     "body": "Trước khi tiếp tục, vui lòng xác nhận các lựa chọn dưới đây.",
     "submit": "Tiếp tục"
+  },
+  "upload": {
+    "title": "Tải lên dữ liệu",
+    "intro": "Chọn file xuất từ Shopee Seller Centre (đơn hàng hoặc báo cáo thu nhập), hoặc file giá vốn, tồn kho theo mẫu của chúng tôi. File được đọc ngay trên máy của bạn và chỉ các cột cần thiết được gửi đi.",
+    "chooseFile": "Chọn file (.xlsx hoặc .csv)",
+    "reading": "Đang đọc file…",
+    "detected": "Loại file: {type}",
+    "assumedNote": "Định dạng này chưa được kiểm chứng với file thật. Nếu số liệu có vẻ sai, hãy báo cho chúng tôi.",
+    "rows": "{n} dòng dữ liệu",
+    "mappedTitle": "Cột được dùng",
+    "piiRemovedTitle": "Thông tin người mua đã được loại bỏ (không gửi đi)",
+    "otherRemovedTitle": "Cột khác không dùng tới (không gửi đi)",
+    "ambiguous": "Chưa chắc đây là loại file nào. Hãy chọn:",
+    "unknown": "Không nhận ra file này. Hãy dùng file xuất trực tiếp từ Seller Centre hoặc file mẫu của chúng tôi.",
+    "tooLarge": "File lớn hơn 25 MB. Hãy xuất theo khoảng thời gian ngắn hơn.",
+    "largeWarning": "File khá lớn: xuất dạng CSV sẽ đọc nhanh hơn.",
+    "confirm": "Gửi dữ liệu",
+    "cancel": "Chọn file khác",
+    "sending": "Đang gửi… {done}/{total} bản ghi",
+    "done": "Xong: đã nhận {rows} dòng.",
+    "period": "Dữ liệu từ {from} đến {to}.",
+    "unknownSku": "{n} dòng có mã SKU chưa có trong dữ liệu đơn hàng nên đã bị bỏ qua.",
+    "skipped": "{n} dòng bị bỏ qua vì thiếu hoặc sai dữ liệu.",
+    "costMissing": "{n} sản phẩm để trống giá vốn.",
+    "another": "Tải lên file khác",
+    "templatesTitle": "File mẫu",
+    "costTemplate": "Tải mẫu giá vốn (CSV)",
+    "stockTemplate": "Tải mẫu tồn kho (CSV)",
+    "types": {
+      "shopee.orders": "Đơn hàng Shopee",
+      "shopee.income": "Báo cáo thu nhập Shopee",
+      "seller.unit_costs": "Giá vốn (file mẫu)",
+      "seller.stock": "Tồn kho (file mẫu)"
+    },
+    "status": {
+      "parsed": "Đã xử lý",
+      "receiving": "Đang nhận",
+      "failed": "Không thành công",
+      "superseded": "Đã được thay thế"
+    },
+    "errors": {
+      "duplicate": "File này đã được tải lên trước đây.",
+      "pii_suspected": "Phát hiện dữ liệu giống thông tin cá nhân nên chúng tôi đã dừng tải lên. Vui lòng liên hệ hỗ trợ.",
+      "invalid": "Dữ liệu không hợp lệ. Vui lòng thử lại.",
+      "state": "Lượt tải lên đã bị huỷ. Vui lòng thử lại.",
+      "incomplete": "Thiếu một phần dữ liệu. Vui lòng thử lại.",
+      "network": "Mất kết nối. Vui lòng thử lại.",
+      "read": "Không đọc được file này."
+    },
+    "backLink": "Về trang tổng quan"
+  },
+  "costs": {
+    "title": "Giá vốn",
+    "intro": "Nhập giá vốn và chi phí bao bì cho mỗi sản phẩm. Sản phẩm thiếu giá vốn sẽ không được tính lợi nhuận.",
+    "missingCount": "{n} sản phẩm chưa có giá vốn.",
+    "bulkHint": "Nhiều sản phẩm? Tải file mẫu, điền trong Excel rồi tải lên lại.",
+    "cogs": "Giá vốn (₫)",
+    "packaging": "Bao bì (₫)",
+    "save": "Lưu",
+    "saved": "Đã lưu",
+    "missing": "Chưa có giá vốn",
+    "since": "Áp dụng từ {date}",
+    "empty": "Chưa có sản phẩm. Hãy tải lên file đơn hàng trước.",
+    "invalid": "Nhập số tiền hợp lệ, ví dụ 85.000.",
+    "backLink": "Về trang tổng quan"
   }
 }

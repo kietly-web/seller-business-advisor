@@ -50,6 +50,13 @@
       "when": 1793864967108,
       "tag": "0006_create_shop_atomic",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793875649538,
+      "tag": "0007_sku_key_stage_seq",
+      "breakpoints": true
     }
   ]
 }

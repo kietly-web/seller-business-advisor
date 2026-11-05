@@ -40,14 +40,15 @@ export const ingestStage = app.table(
       .references(() => shop.id, { onDelete: 'cascade' }),
     recordKind: text('record_kind').notNull(),
     sourceRow: integer('source_row').notNull(),
+    seq: integer('seq').notNull().default(0),
     record: jsonb('record').notNull(),
   },
   (t) => [
-    primaryKey({ columns: [t.shopId, t.uploadId, t.recordKind, t.sourceRow] }),
+    primaryKey({ columns: [t.shopId, t.uploadId, t.recordKind, t.sourceRow, t.seq] }),
     foreignKey({ name: 'ingest_stage_upload_fk', columns: [t.shopId, t.uploadId], foreignColumns: [upload.shopId, upload.id] }).onDelete('cascade'),
     check(
       'ingest_stage_kind_check',
-      sql`${t.recordKind} in ('order_line', 'fee_line', 'product_traffic', 'sku', 'stock')`,
+      sql`${t.recordKind} in ('order_line', 'fee_line', 'product_traffic', 'sku', 'stock', 'unit_cost')`,
     ),
   ],
 );

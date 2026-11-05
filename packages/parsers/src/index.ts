@@ -18,3 +18,4 @@ export { isPiiHeader, PII_HEADERS } from './pii-headers';
 export { normaliseHeader } from './normalise';
 export { unitCostTemplate, stockTemplate, type TemplateSku, type UnitCostPrefill } from './parsers/seller-templates-v1';
 export { shopeeOrdersV1, shopeeIncomeV1, sellerUnitCostsV1, sellerStockV1 };
+export { MAX_CHUNK_BYTES, MAX_CHUNK_RECORDS, chunkRecords, fromWire, looksLikePii, recordHasPii, toWire, wireChunk, type WireRecord } from './wire';
