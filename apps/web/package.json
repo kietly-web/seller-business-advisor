@@ -10,13 +10,13 @@
     "typecheck": "next typegen && tsc --noEmit"
   },
   "dependencies": {
-    "@aws-sdk/client-sesv2": "3.1158.0",
+    "@aws-sdk/client-sesv2": "3.1161.0",
     "@sa/db": "workspace:*",
     "@sa/engine": "workspace:*",
     "@sa/llm": "workspace:*",
     "@sa/parsers": "workspace:*",
     "@sa/shared": "workspace:*",
-    "better-auth": "1.7.14",
+    "better-auth": "1.7.15",
     "next": "16.4.5",
     "react": "19.3.1",
     "react-dom": "19.3.1",
