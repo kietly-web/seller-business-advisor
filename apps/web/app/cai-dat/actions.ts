@@ -3,14 +3,14 @@
 import { appDb } from '@sa/db';
 import { headers } from 'next/headers';
 import { updateOptionalConsents } from '../../server/consents';
-import { requireUser } from '../../server/session';
+import { requireConsentedUser } from '../../server/session';
 
 export interface ConsentSettingsState {
   saved: boolean;
 }
 
 export async function saveConsentsAction(_prev: ConsentSettingsState, form: FormData): Promise<ConsentSettingsState> {
-  const user = await requireUser();
+  const user = await requireConsentedUser();
   await updateOptionalConsents(
     appDb(),
     user.id,

@@ -4,6 +4,7 @@ import { asUserId } from '@sa/shared';
 import { headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { getAuth } from './auth-instance';
+import { hasServiceConsent } from './consents';
 
 export interface SessionUser {
   id: string;
@@ -24,12 +25,21 @@ export async function requireUser(): Promise<SessionUser> {
   return user;
 }
 
+// Consent is written by a hook after the user row commits, so a failed write can leave an account without it
+export async function requireConsentedUser(): Promise<SessionUser> {
+  const user = await requireUser();
+  if (!(await hasServiceConsent(appDb(), user.id))) {
+    redirect('/dong-y');
+  }
+  return user;
+}
+
 export async function myShops(userId: string): Promise<ShopSummary[]> {
   return withUserContext(appDb(), asUserId(userId), listMyShops);
 }
 
 export async function requireShop(): Promise<{ user: SessionUser; shop: ShopSummary }> {
-  const user = await requireUser();
+  const user = await requireConsentedUser();
   const [shop] = await myShops(user.id);
   if (!shop) {
     redirect('/bat-dau');

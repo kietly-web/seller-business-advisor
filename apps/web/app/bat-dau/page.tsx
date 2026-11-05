@@ -1,13 +1,13 @@
 import { redirect } from 'next/navigation';
 import { t } from '../../lib/messages';
-import { myShops, requireUser } from '../../server/session';
+import { myShops, requireConsentedUser } from '../../server/session';
 import { createDemoShopAction } from './actions';
 import { OnboardingForm } from './onboarding-form';
 
 export const dynamic = 'force-dynamic';
 
 export default async function OnboardingPage() {
-  const user = await requireUser();
+  const user = await requireConsentedUser();
   if ((await myShops(user.id)).length > 0) {
     redirect('/tong-quan');
   }

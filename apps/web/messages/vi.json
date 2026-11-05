@@ -88,5 +88,10 @@
     "invalidMargin": "Nhập một số từ 1 đến 80.",
     "invalidCategory": "Vui lòng chọn ngành hàng.",
     "generic": "Đã có lỗi. Vui lòng thử lại."
+  },
+  "consentGate": {
+    "title": "Xác nhận đồng ý xử lý dữ liệu",
+    "body": "Trước khi tiếp tục, vui lòng xác nhận các lựa chọn dưới đây.",
+    "submit": "Tiếp tục"
   }
 }

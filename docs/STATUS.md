@@ -1,22 +1,25 @@
 # Project status
 
-Last updated: 05/11/2026 · Update this file in every slice PR (see `CLAUDE.md`, "How we work"). It is the hand-off note for any agent or person joining the work: read it after `CLAUDE.md` and before starting anything.
+Last updated: 05/11/2026 (Slice A) · Update this file in every slice PR (see `CLAUDE.md`, "How we work"). It is the hand-off note for any agent or person joining the work: read it after `CLAUDE.md` and before starting anything.
 
 ## Where we are
 
-**Milestone M1 (data, auth, consent), nearly done.** The data layer and email sign-up are on `main`; the sign-up and onboarding screens are next.
+**Milestone M1 (data, auth, consent) is complete** once Slice A merges. Next milestone: M2 ingestion.
 
 | Area | State |
 | --- | --- |
 | M0 Foundations (SA-001–006) | Done |
 | Data layer: schema, RLS, roles, tenant-scoped keys, `withShopContext`, repositories, generated RLS suite (SA-101–104) | Done |
-| Auth: email + password, verification email, TOTP 2FA, breach check, DB rate limits, 14-day sessions (SA-105) | Done, server side only; no UI yet. Google sign-in deferred |
+| Auth: email + password, verification email, TOTP 2FA, breach check, DB rate limits, 14-day sessions (SA-105) | Done. Google sign-in deferred; no 2FA UI yet |
+| Slice A: sign-up with consents, sign-in, check-email, shop onboarding / demo shop, dashboard, consent settings, sign-out (SA-106, SA-107) | Done (PR for `SA-106-signup-onboarding-ui`) |
 | Audit action catalogue (SA-108), job runner + `/api/cron/drain` (SA-109), compliance docs (SA-110) | Done |
-| Process | Lean mode (PR #21): slices, CI as gate, go-live checklist |
+| Process | Lean mode: slices, CI as gate, go-live checklist |
+
+Routes: `/` (landing), `/dang-ky`, `/kiem-tra-email`, `/dang-nhap`, `/dong-y` (consent gate), `/bat-dau`, `/tong-quan`, `/cai-dat`. Every signed-in page except `/dong-y` requires a recorded service consent (`requireConsentedUser`), because the sign-up hook writes consents after the user row commits. One owned shop per user for now. Sign-up and sign-in post from the browser to `/api/auth/*` because Better Auth applies rate limits only there, not to server-side `auth.api` calls. Consents travel in the sign-up body and are recorded by a Better Auth hook.
 
 ## Next
 
-**Slice A — sign-up and onboarding UI** (SA-106, SA-107): Vietnamese sign-up, sign-in, verify-email and sign-out pages; consent screen (3 unticked boxes, consent ledger); shop creation via `app_ctx.create_shop`; demo-shop toggle. After that: Slice B (parsers). Full slice list: `docs/design/08-delivery-plan.md`.
+**Slice B: parsers** (SA-201–204): parser registry, header normalisation and detection, PII allowlist and test, synthetic demo-shop generator with export writers, orders/income/cost/stock parsers with fixtures. Security review required (ingestion). Then Slice C (upload flow). Full slice list: `docs/design/08-delivery-plan.md`.
 
 ## Open PRs
 
@@ -50,4 +53,5 @@ Last updated: 05/11/2026 · Update this file in every slice PR (see `CLAUDE.md`,
 - **gitleaks** flags secret-looking literals in tests; generate test secrets at runtime.
 - If `git push` fails with `could not read Username`, push with gh's login for that command only: `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`. Don't change the global git config.
 - **`server-only`** throws when imported in Vitest; keep testable logic in modules that don't import it.
+- Sign-up/sign-in can't work on Vercel yet: production auth env isn't set, and `BETTER_AUTH_URL` must match each deployment's origin (Better Auth's origin check), so previews need their own value.
 - Project agent files added mid-session aren't available until a new session starts; use a general-purpose agent pointed at the agent file instead.

@@ -1,16 +1,16 @@
 'use server';
 
-import { appDb } from '@sa/db';
+import { appDb, ShopAlreadyExistsError } from '@sa/db';
 import { redirect } from 'next/navigation';
 import { createShopForUser, demoShopInput, parseOnboarding, type FieldErrors } from '../../server/onboarding';
-import { myShops, requireUser } from '../../server/session';
+import { myShops, requireConsentedUser } from '../../server/session';
 
 export interface OnboardingState {
   errors: FieldErrors;
 }
 
 async function userWithoutShop() {
-  const user = await requireUser();
+  const user = await requireConsentedUser();
   if ((await myShops(user.id)).length > 0) {
     redirect('/tong-quan');
   }
@@ -23,12 +23,22 @@ export async function createShopAction(_prev: OnboardingState, form: FormData): 
   if (!parsed.ok) {
     return { errors: parsed.errors };
   }
-  await createShopForUser(appDb(), user.id, { ...parsed.value, isDemo: false });
+  await createOnce(user.id, { ...parsed.value, isDemo: false });
   redirect('/tong-quan');
 }
 
 export async function createDemoShopAction(): Promise<void> {
   const user = await userWithoutShop();
-  await createShopForUser(appDb(), user.id, demoShopInput());
+  await createOnce(user.id, demoShopInput());
   redirect('/tong-quan');
+}
+
+async function createOnce(userId: string, input: Parameters<typeof createShopForUser>[2]): Promise<void> {
+  try {
+    await createShopForUser(appDb(), userId, input);
+  } catch (error) {
+    if (!(error instanceof ShopAlreadyExistsError)) {
+      throw error;
+    }
+  }
 }

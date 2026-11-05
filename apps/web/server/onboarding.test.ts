@@ -1,9 +1,9 @@
 import type { PGlite } from '@electric-sql/pglite';
-import { currentConsents, withUserContext, type Db } from '@sa/db';
+import { currentConsents, ShopAlreadyExistsError, withUserContext, type Db } from '@sa/db';
 import { createTestDb } from '@sa/db/testing';
 import { asUserId } from '@sa/shared';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { recordSignUpConsents, updateOptionalConsents } from './consents';
+import { hasServiceConsent, recordSignUpConsents, updateOptionalConsents } from './consents';
 import { createShopForUser, demoShopInput, parseOnboarding } from './onboarding';
 
 let client: PGlite;
@@ -52,6 +52,10 @@ describe('createShopForUser', () => {
     expect(audit.rows).toEqual([{ action: 'shop.created', actor: 'owner-1' }]);
   });
 
+  it('refuses a second shop for the same owner', async () => {
+    await expect(createShopForUser(db, 'owner-1', demoShopInput())).rejects.toBeInstanceOf(ShopAlreadyExistsError);
+  });
+
   it('marks the demo shop as demo', async () => {
     const shopId = await createShopForUser(db, 'owner-2', demoShopInput());
     const shop = await client.query<{ is_demo: boolean; name: string }>(`select is_demo, name from app.shop where id = $1`, [shopId]);
@@ -82,3 +86,11 @@ describe('consent settings', () => {
   });
 });
 
+
+describe('consent gate', () => {
+  it('reports a user without a service consent record as not consented', async () => {
+    expect(await hasServiceConsent(db, 'no-record-user')).toBe(false);
+    await recordSignUpConsents(db, 'no-record-user', { service_processing: true, anonymised_benchmarking: false, marketing: false }, null);
+    expect(await hasServiceConsent(db, 'no-record-user')).toBe(true);
+  });
+});

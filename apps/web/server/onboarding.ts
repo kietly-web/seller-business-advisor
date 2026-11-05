@@ -1,4 +1,4 @@
-import { appendAudit, createShop, updateShopSettings, withShopContext, withUserContext, type Db } from '@sa/db';
+import { createShop, withUserContext, type Db } from '@sa/db';
 import { asUserId, type ShopId } from '@sa/shared';
 import { isCategoryKey, t, type CategoryKey } from '../lib/messages';
 
@@ -35,21 +35,14 @@ export async function createShopForUser(
   userId: string,
   input: OnboardingInput & { isDemo: boolean },
 ): Promise<ShopId> {
-  const uid = asUserId(userId);
-  const shopId = await withUserContext(db, uid, (tx) =>
-    createShop(tx, { name: input.name, category: input.category, isDemo: input.isDemo }),
+  return withUserContext(db, asUserId(userId), (tx) =>
+    createShop(tx, {
+      name: input.name,
+      category: input.category,
+      isDemo: input.isDemo,
+      settings: { targetMarginPct: input.targetMarginPct },
+    }),
   );
-  await withShopContext(db, { role: 'sa_app', shopId, userId: uid }, async (tx) => {
-    await updateShopSettings(tx, shopId, { targetMarginPct: input.targetMarginPct });
-    await appendAudit(tx, {
-      shopId,
-      actor: uid,
-      action: 'shop.created',
-      entityId: shopId,
-      meta: { isDemo: input.isDemo },
-    });
-  });
-  return shopId;
 }
 
 export function demoShopInput(): OnboardingInput & { isDemo: true } {

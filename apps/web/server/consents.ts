@@ -16,7 +16,8 @@ export const CONSENT_PURPOSES: readonly ConsentPurpose[] = ['service_processing'
 export const OPTIONAL_PURPOSES: readonly ConsentPurpose[] = ['anonymised_benchmarking', 'marketing'];
 
 export function consentTextHash(): string {
-  return createHash('sha256').update(JSON.stringify(t.consents)).digest('hex');
+  const shown = { legend: t.signUp.consentsLegend, hint: t.signUp.consentsHint, boxes: t.consents };
+  return createHash('sha256').update(JSON.stringify(shown)).digest('hex');
 }
 
 export function parseConsentChoices(value: unknown): Record<ConsentPurpose, boolean> | null {
@@ -85,4 +86,9 @@ export async function updateOptionalConsents(
     }
     return changes;
   });
+}
+
+export async function hasServiceConsent(db: Db, userId: string): Promise<boolean> {
+  const current = await withUserContext(db, asUserId(userId), currentConsents);
+  return current.service_processing === true;
 }
