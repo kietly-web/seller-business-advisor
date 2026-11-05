@@ -79,9 +79,9 @@ Each row names the decision, the business reason, the trade-off we accepted, and
 | # | Decision | Why | Trade-off accepted | Record |
 | --- | --- | --- | --- | --- |
 | E1 | **Rules decide; the AI only writes the wording** | Recommendations must be explainable, reproducible and testable (R5) | Wording is constrained to short cards; every rule needs a handwritten Vietnamese template | [ADR-004](adr/ADR-004-rules-first-llm-explains.md) |
-| E2 | **Impacts are shown as ranges** (for example "0,9–1,4 triệu ₫ a month"), never one number | Estimates are uncertain; a single figure overpromises | Less "punchy" than a precise promise | [05](design/05-recommendation-engine.md) |
+| E2 | **Impacts are shown as ranges** (for example "0.9–1.4 million VND a month"), never one number | Estimates are uncertain; a single figure overpromises | Less "punchy" than a precise promise | [05](design/05-recommendation-engine.md) |
 | E3 | **Shopee fees come only from the income report**, not the orders export | Avoids counting fees twice when both files are uploaded | Profit is incomplete until the seller uploads the income report; the UI says so | [04](design/04-ingestion-parser.md) |
-| E4 | **Order-level discounts and fees are split across products by revenue share, and the totals match the income report to the đồng** | Sellers must be able to reconcile with Shopee's own report | Allocation is an approximation per product, but the total is exact | [05 Metrics](design/05-recommendation-engine.md#see-metric-definitions-fr-06) |
+| E4 | **Order-level discounts and fees are split across products by revenue share, and the totals match the income report to the last VND** | Sellers must be able to reconcile with Shopee's own report | Allocation is an approximation per product, but the total is exact | [05 Metrics](design/05-recommendation-engine.md#see-metric-definitions-fr-06) |
 | E5 | **Fees on cancelled or returned orders are shown separately as "unallocated"** | Spreading them over other products would distort per-product profit | One more line for the seller to understand | [05](design/05-recommendation-engine.md) |
 | E6 | **A unit cost entered today also applies to older orders** | Sellers enter costs once and expect their history to show profit | If costs really changed over time, history uses the earliest known cost until the seller adds dated costs | [05](design/05-recommendation-engine.md) |
 | E7 | **Products without a cost show revenue but no profit, and are excluded from margin advice**; best-sellers without a cost get a "please enter cost" banner | Wrong costs would produce wrong advice (R6) | Shops that skip costs get less value; the banner is the nudge | [05](design/05-recommendation-engine.md) |
@@ -133,7 +133,7 @@ Problems caught before they reached a user, and how:
 | One income row produces several fee lines, which would have silently lost fees | Writing the database tests | Write the test against real data shapes before trusting a key design |
 | A seller SKU like `0912345678` looked like a phone number and would have blocked that shop's uploads | Security review | Safety checks need false-positive tests as much as true-positive ones |
 | "Infinite" stock cover couldn't be stored and would have crashed profit calculation | An integration test | Edge values (zero sales, empty weeks) deserve explicit tests |
-| The AI check would have accepted digits written in other scripts (`５`) and number words (`năm triệu`); a first fix then wrongly rejected `tỷ lệ` ("rate") | Security review, then the prompt's own example tests | Language-aware rules need native-language test cases |
+| The AI check would have accepted digits written in other scripts (`５`) and number words (`năm triệu`, "five million"); a first fix then wrongly rejected `tỷ lệ` ("rate") | Security review, then the prompt's own example tests | Language-aware rules need native-language test cases |
 | The production home page returned an error that CI's build didn't catch | The owner noticed | Added the post-deploy smoke check (T8) |
 
 Process observations:
@@ -146,7 +146,7 @@ Process observations:
 
 | Term | Meaning here |
 | --- | --- |
-| Contribution margin (lãi sau phí và giá vốn) | Revenue after the shop's own discounts, minus Shopee fees and unit costs |
+| Contribution margin | Revenue after the shop's own discounts, minus Shopee fees and unit costs |
 | SKU | One sellable product variant |
 | Allowlist | Keep only named columns; drop everything else by default |
 | Row-level security (RLS) | The database itself filters rows by shop, so app bugs can't leak data |

@@ -102,7 +102,7 @@ On-demand runs are limited to 3 per shop per 24 hours. The weekly cron and the d
 
 Card decisions follow fixed transitions (`shown` → `accepted` / `done` / `dismissed`; `accepted` → `done` / `dismissed`), each audited. Dismiss reasons: `not_relevant` (hides the rule for that SKU for 8 weeks), `already_done`, `disagree`, `cannot_do`, `other`. The seller rates any decided card 1–5 for clarity.
 
-Every card carries a visible label: "Nội dung do AI (Claude) viết…" when the model wrote it, "Gợi ý do hệ thống tạo tự động…" for template text.
+Every card carries a visible label: one saying the text was written by AI (Claude) with figures computed by the system, when the model wrote it, and one saying the card was generated automatically from the seller's data, for template text (`actions.aiLabelLlm` and `actions.aiLabelTemplate` in `apps/web/messages/vi.json`).
 
 Competitor median (SA-408): the latest price per listing within 14 days, with at least 2 listings (`competitorMedian` in the engine). It's computed at run time and on the competitor page, not stored in `sku_week_metric`, which leaves that column for a later slice.
 
