@@ -62,6 +62,7 @@ On failure: `run_after = now() + 2^attempts minutes` and `last_error` recorded. 
 - Point-in-time restore window: the plan default, at least 7 days in production. Run a monthly restore drill into a branch, with the result logged.
 - Connected through the Neon–Vercel integration (SA-002, 2026-11-04). It injects `DATABASE_URL` (pooled) and `DATABASE_URL_UNPOOLED` (direct) for Development and Production, and creates a Neon branch plus its variables per preview deployment. Those URLs use the Neon owner role until SA-102 adds `sa_app` / `sa_worker`; from then on the runtime variables must point at the non-owner roles (see the table below), or RLS is bypassed in practice.
 - The demo-data `seed` branch is created with the schema and demo seeding (SA-101, SA-209); until then preview branches fork the empty default branch.
+- Preview branches are deleted when their PR closes (`.github/workflows/neon-preview-cleanup.yml`), because Neon caps branches per project and a full project leaves Vercel previews waiting on the integration. The workflow needs the `NEON_API_KEY` secret and the `NEON_PROJECT_ID` variable in GitHub. It looks up the branch by the integration's `preview/<git branch>` name and skips cleanly if none exists.
 
 ## Environment variables
 
