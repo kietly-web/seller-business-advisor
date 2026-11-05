@@ -1,6 +1,6 @@
 # 08 — Delivery plan
 
-Six milestones take the MVP from an empty repo to a closed beta. Each one ends in something demoable on the demo shop. The order follows risk: tenant isolation and PII handling are built and tested before any feature that depends on them. Every backlog item has an owning sub-agent (`.claude/agents/`) and links to the requirement and design section it implements. Phase 0 discovery work (interviews, counsel, ISV) runs alongside M0–M2 and is owned by the human.
+Six milestones take the MVP from an empty repo to a closed beta. Each one ends in something demoable on the demo shop. The order follows risk: tenant isolation and PII handling are built and tested before any feature that depends on them. Every backlog item links to the requirement and design section it implements; the Area column names the part of the codebase. Work ships in slices (several items per PR, see below), and pre-launch work waits in the go-live checklist. Phase 0 discovery work (interviews, counsel, ISV) runs alongside and is owned by the human.
 
 ## Milestones and exit criteria
 
@@ -20,7 +20,7 @@ ID format `SA-<milestone><nn>`, which is also the commit and branch prefix (see 
 
 ### M0 Foundations
 
-| ID | Item | Owner agent | Traces | Depends |
+| ID | Item | Area | Traces | Depends |
 | --- | --- | --- | --- | --- |
 | SA-001 | Scaffold pnpm workspace: `apps/web`, `packages/{db,parsers,engine,llm,shared}`; TS strict; ESLint; Vitest | platform-engineer | NFR-MAINT, ADR-001 | — |
 | SA-002 | Vercel project (`sin1`), Neon project (SG), Neon–Vercel integration for preview branches, `seed` branch | platform-engineer | 07, ADR-002 | SA-001 |
@@ -31,7 +31,7 @@ ID format `SA-<milestone><nn>`, which is also the commit and branch prefix (see 
 
 ### M1 Data, auth, consent
 
-| ID | Item | Owner agent | Traces | Depends |
+| ID | Item | Area | Traces | Depends |
 | --- | --- | --- | --- | --- |
 | SA-101 | Drizzle schema for all `app.*` tables in 02 | db-engineer | FR-06…FR-12 | SA-002 |
 | SA-102 | Roles, grants, `app_ctx` functions, RLS policies, `active_shop_ids()` | db-engineer | NFR-SEC, ADR-006 | SA-101 |
@@ -46,7 +46,7 @@ ID format `SA-<milestone><nn>`, which is also the commit and branch prefix (see 
 
 ### M2 Ingestion
 
-| ID | Item | Owner agent | Traces | Depends |
+| ID | Item | Area | Traces | Depends |
 | --- | --- | --- | --- | --- |
 | SA-201 | Parser framework: registry, header normalisation, detection scoring, `ColumnSpec`, PII header list + build-failing test | parser-engineer | FR-03, FR-04, ADR-003 | SA-004 |
 | SA-202 | Synthetic shop generator (12 months) + export-format writers with fake buyer columns | parser-engineer | FR-12, R8 | SA-201 |
@@ -60,7 +60,7 @@ ID format `SA-<milestone><nn>`, which is also the commit and branch prefix (see 
 
 ### M3 Profit
 
-| ID | Item | Owner agent | Traces | Depends |
+| ID | Item | Area | Traces | Depends |
 | --- | --- | --- | --- | --- |
 | SA-301 | `computeWeekMetrics` incl. fee allocation + reconciliation test | engine-engineer | FR-06 | SA-004 |
 | SA-302 | `recompute_metrics` job writing `sku_week_metric` with `inputs_hash` skip | db-engineer | FR-06 | SA-301, SA-109 |
@@ -69,7 +69,7 @@ ID format `SA-<milestone><nn>`, which is also the commit and branch prefix (see 
 
 ### M4 Recommendations
 
-| ID | Item | Owner agent | Traces | Depends |
+| ID | Item | Area | Traces | Depends |
 | --- | --- | --- | --- | --- |
 | SA-401 | Rule framework + rules v1 (7 rules + COST_MISSING) with static vi templates and checklists | engine-engineer | FR-07, FR-08 | SA-301 |
 | SA-402 | Ranking: score, cooldown, diversity, sufficiency gates | engine-engineer | FR-07, US-05 | SA-401 |
@@ -82,7 +82,7 @@ ID format `SA-<milestone><nn>`, which is also the commit and branch prefix (see 
 
 ### M5 Beta readiness
 
-| ID | Item | Owner agent | Traces | Depends |
+| ID | Item | Area | Traces | Depends |
 | --- | --- | --- | --- | --- |
 | SA-501 | `measure_outcomes` job, diff-in-diff, Beta-binomial track record, track-record UI | engine-engineer | FR-09, US-06 | SA-407 |
 | SA-502 | Data export (ZIP of CSVs, formula-injection safe) | db-engineer | FR-11 | SA-103 |
@@ -96,7 +96,7 @@ ID format `SA-<milestone><nn>`, which is also the commit and branch prefix (see 
 
 ### M6 Shoulds
 
-| ID | Item | Owner agent | Traces |
+| ID | Item | Area | Traces |
 | --- | --- | --- | --- |
 | SA-601 | Weekly email digest | platform-engineer | FR-15 |
 | SA-602 | Discount what-if simulator | engine-engineer + frontend-engineer | FR-14 |
@@ -109,10 +109,44 @@ ID format `SA-<milestone><nn>`, which is also the commit and branch prefix (see 
 - Shopee ISV application via the household business (Q-D2) → gates FR-16.
 - Interview synthesis, as-is/to-be process maps, willingness to pay → `ba-analyst` can draft guides and synthesis templates.
 
-## Working agreement for agents
+## Status (05/11/2026)
 
-1. One backlog item per branch/PR, named `SA-xxx-short-slug` (≤ 60 chars). The PR uses `.github/pull_request_template.md`, and its `## What changed` section must be filled in; the `PR description` check enforces it.
-2. The owning agent implements, `qa-engineer` adds or extends tests, and `security-compliance-reviewer` reviews any change touching `db`, `parsers`, `llm`, auth or ingest routes.
-3. A change that contradicts a design doc updates the doc or adds an ADR in the same PR (`solution-architect` reviews).
-4. Merging: an agent may enable auto-merge on a conflict-free PR; a PR with merge conflicts is resolved and merged manually by the owner, never by an agent (see `CLAUDE.md`, "Merging").
-5. Definition of done: acceptance criteria from the US met; tests green in CI; traceability row updated; no new sub-processor without an ADR; vi strings in `messages/vi.json`; no comments that just narrate the code.
+Done: M0 (SA-001–006) and in M1 SA-101–105 (email sign-up; Google sign-in deferred), SA-108–110.
+
+## Remaining work as slices
+
+One PR per slice (`CLAUDE.md`, "How we work"). Security review applies to slices marked ⚑.
+
+| Slice | Items | Delivers |
+| --- | --- | --- |
+| A Sign-up and onboarding UI | SA-106, SA-107 (+ sign-in, verify, sign-out pages) | A seller can sign up in Vietnamese, give consents, create a shop or open the demo shop |
+| B Parsers ⚑ | SA-201, SA-202, SA-203, SA-204 | Registry, PII allowlist, synthetic shop generator, orders/income/cost/stock parsers with fixtures |
+| C Upload flow ⚑ | SA-205, SA-206, SA-207, SA-209 | Upload on a phone, removed columns shown, costs entered, demo shop seeded |
+| D Profit | SA-301, SA-302, SA-303, SA-304 | Weekly profit per SKU with drill-down, within the performance budget |
+| E Engine | SA-401, SA-402, SA-403 | Rules, ranking and the golden set |
+| F LLM ⚑ | SA-404, SA-405 | Claude explanations with placeholder validation and template fallback |
+| G Actions | SA-406, SA-407, SA-408 | Weekly run, action cards, competitor tracker |
+| H Outcomes and data rights ⚑ | SA-501, SA-502, SA-503 | Outcome measurement, export, account deletion |
+
+M6 items stay as listed above and come after the beta.
+
+## Go-live checklist (before the first real seller)
+
+Required for a professional launch but deliberately not built yet. Each line names who does it.
+
+| Item | Who |
+| --- | --- |
+| Separate Neon LOGIN roles for runtime (member of `sa_app`, `sa_worker`, `sa_auth`) and for migrations; runtime must not use the owner URL | Owner + Claude |
+| `DATABASE_URL_MIGRATE` secret in GitHub so `migrate.yml` applies migrations to production | Owner |
+| Production env in Vercel: `BETTER_AUTH_SECRET` (≥ 32 chars), `BETTER_AUTH_URL` (https), `AWS_SES_REGION`, `EMAIL_FROM`, AWS SES credentials, `CRON_SECRET`, `ANTHROPIC_API_KEY` | Owner |
+| SES: verify the sending domain, SPF/DKIM/DMARC, request production access | Owner |
+| Branch protection on `main` with required checks; GitHub auto-merge allowed | Owner |
+| Vercel Pro (commercial use, per-minute cron) and register the drain cron | Owner + Claude |
+| Vercel Firewall rate rule on `/api/auth/sign-in/*` | Owner |
+| Error tracking with PII scrubbing (ADR + sub-processor row) | Claude |
+| Google sign-in (OAuth client) if FR-01 keeps it | Owner + Claude |
+| Counsel answers to Q-L1–L3; transfer impact assessment filed (SA-508) | Owner + counsel |
+| Privacy policy, terms and complaint channel in Vietnamese (SA-504) | Claude drafts, owner + counsel approve |
+| Whole-app security review, ASVS L2 checklist, CSP and headers (SA-505) | Claude |
+| a11y and performance audits (SA-506); end-to-end tests of the full loop (SA-507) | Claude |
+| Restore drill from Neon point-in-time restore; breach-runbook tabletop drill | Owner |

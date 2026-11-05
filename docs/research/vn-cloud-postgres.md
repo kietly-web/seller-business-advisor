@@ -1,6 +1,6 @@
 # Vietnamese cloud Postgres: options and exit runbook (SA-006)
 
-Status: Research · as of 04/11/2026 · owner: solution-architect · traces R1, Q-L1, ADR-002
+Status: Research · as of 04/11/2026 · owner: founder · traces R1, Q-L1, ADR-002
 
 This prices and plans the ADR-002 exit path for the case where counsel answers Q-L1 with "user data must be stored in Vietnam". It does not perform the move. Prices are copied from provider pages on the as-of date, in VND per month **excluding VAT**. Anything a page does not state is marked "not stated" and becomes a quote question.
 
