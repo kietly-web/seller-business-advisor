@@ -2,6 +2,8 @@
 
 Last updated: 05/11/2026 (Slice F) · Update this file in every slice PR (see `CLAUDE.md`, "How we work"). It is the hand-off note for any agent or person joining the work: read it after `CLAUDE.md` and before starting anything.
 
+Decisions and trade-offs so far are summarised for BA readers in [case-study.md](case-study.md); every document is indexed in [README.md](README.md).
+
 ## Where we are
 
 **Milestone M1 (data, auth, consent) is complete.** **M2 (ingestion) is complete** with Slices B and C. M3 (see and decide) is in progress: Slices D (profit), E (engine rules) and F (LLM explanations) are done; Slice G (weekly run and action cards) is next.
