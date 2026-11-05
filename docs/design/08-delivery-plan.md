@@ -146,7 +146,7 @@ Required for a professional launch but deliberately not built yet. Each line nam
 | Vercel Pro (commercial use, per-minute cron) and register the drain cron | Owner + Claude |
 | Vercel Firewall rate rule on `/api/auth/sign-in/*` | Owner |
 | Error tracking with PII scrubbing (ADR + sub-processor row) | Claude |
-| Google sign-in (OAuth client) if FR-01 keeps it | Owner + Claude |
+| Google OAuth client in Google Cloud, `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in Vercel; consent screen published (code done) | Owner |
 | Counsel answers to Q-L1–L3; transfer impact assessment filed (SA-508) | Owner + counsel |
 | Privacy policy, terms and complaint channel in Vietnamese (SA-504) | Claude drafts, owner + counsel approve |
 | Whole-app security review, ASVS L2 checklist, CSP and headers (SA-505) | Claude |

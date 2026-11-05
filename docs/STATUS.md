@@ -12,7 +12,7 @@ Decisions and trade-offs so far are summarised for BA readers in [case-study.md]
 | --- | --- |
 | M0 Foundations (SA-001–006) | Done |
 | Data layer: schema, RLS, roles, tenant-scoped keys, `withShopContext`, repositories, generated RLS suite (SA-101–104) | Done |
-| Auth: email + password, verification email, TOTP 2FA, breach check, DB rate limits, 14-day sessions (SA-105) | Done. Google sign-in deferred; no 2FA UI yet |
+| Auth: email + password, verification email, TOTP 2FA, breach check, DB rate limits, 14-day sessions (SA-105) | Done. Google sign-in built (turns on with `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET`); email + password shows in production only with SES; no 2FA UI yet |
 | Slice A: sign-up with consents, sign-in, check-email, shop onboarding / demo shop, dashboard, consent settings, sign-out (SA-106, SA-107) | Done (PR for `SA-106-signup-onboarding-ui`) |
 | Audit action catalogue (SA-108), job runner + `/api/cron/drain` (SA-109), compliance docs (SA-110) | Done |
 | Slice B: parser registry, header normalisation, detection, PII allowlist + test, order-ID hashing, synthetic 12-month shop with export writers, `shopee.orders@v1`, `shopee.income@v1` (assumed), `seller.unit_costs@v1`, `seller.stock@v1` + CSV templates (SA-201–204) | Done (PR for `SA-201-parsers`). No real Seller Centre files yet, so both Shopee parsers stay `assumed` |
@@ -60,7 +60,7 @@ Known gaps carried forward:
 | `DATABASE_URL_MIGRATE` secret in the GitHub `production` environment | No migration has ever been applied to Neon; `migrate.yml` fails until it exists |
 | Anthropic: `ANTHROPIC_API_KEY` + `LLM_MODEL_EXPLAIN` in Vercel, and `ANTHROPIC_API_KEY_EVAL` (a separate key with a spend limit) as a GitHub secret | Without them, cards use templates and the live eval workflow fails; confirm data location, retention and no-training terms (Q-T2) before beta |
 | `CRON_SECRET` in Vercel | The weekly cron (`/api/cron/weekly`, Monday 01:00 ICT) returns 401 without it, so no automatic weekly cards |
-| Production auth env in Vercel (`BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, SES settings) | Sign-up can't work on Vercel without them (go-live checklist) |
+| Production auth env in Vercel: `BETTER_AUTH_SECRET` (32+ random characters), `BETTER_AUTH_URL` (`https://seller-business-advisor.vercel.app`), plus `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` from a Google Cloud OAuth client (web app; authorised redirect URI `https://seller-business-advisor.vercel.app/api/auth/callback/google`; scopes openid, email, profile). SES settings are optional and only needed for email + password | Sign-in can't work on Vercel without them; with only the Google keys, the site offers Google sign-in alone |
 
 ## Environment facts
 
