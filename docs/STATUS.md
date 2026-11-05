@@ -48,5 +48,6 @@ Last updated: 05/11/2026 · Update this file in every slice PR (see `CLAUDE.md`,
 - The Drizzle migrator sends each `--> statement-breakpoint` chunk as one prepared statement: one statement per chunk.
 - **Tests** use PGlite (in-process Postgres 18) via `@sa/db/testing`; no Docker needed.
 - **gitleaks** flags secret-looking literals in tests; generate test secrets at runtime.
+- If `git push` fails with `could not read Username`, push with gh's login for that command only: `git -c credential.helper= -c 'credential.helper=!gh auth git-credential' push`. Don't change the global git config.
 - **`server-only`** throws when imported in Vitest; keep testable logic in modules that don't import it.
 - Project agent files added mid-session aren't available until a new session starts; use a general-purpose agent pointed at the agent file instead.
