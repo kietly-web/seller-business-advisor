@@ -36,3 +36,14 @@ export async function createShop(
 export async function renameShop(tx: Tx, shopId: ShopId, name: string): Promise<void> {
   await tx.update(shop).set({ name }).where(eq(shop.id, shopId));
 }
+
+export interface ShopSettings {
+  targetMarginPct?: number;
+}
+
+export async function updateShopSettings(tx: Tx, shopId: ShopId, settings: ShopSettings): Promise<void> {
+  await tx
+    .update(shop)
+    .set({ settings: sql`${shop.settings} || ${JSON.stringify(settings)}::jsonb` })
+    .where(eq(shop.id, shopId));
+}

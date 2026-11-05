@@ -3,6 +3,7 @@ import type { PGlite } from '@electric-sql/pglite';
 import { createTestDb } from '@sa/db/testing';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { createAuth, type Auth } from './auth';
+import { CONSENT_POLICY_VERSION, consentTextHash } from './consents';
 import type { EmailMessage, EmailSender } from './email';
 
 class CapturingSender implements EmailSender {
@@ -22,6 +23,8 @@ class CapturingSender implements EmailSender {
 
 const PASSWORD = 'mua-he-o-da-lat-2026';
 const TEST_SECRET = randomBytes(32).toString('hex');
+type SignUpBody = NonNullable<Parameters<Auth['api']['signUpEmail']>[0]>['body'];
+const CONSENTS = { service_processing: true, anonymised_benchmarking: false, marketing: true };
 
 let client: PGlite;
 let email: CapturingSender;
@@ -59,7 +62,7 @@ async function errorOf(promise: Promise<unknown>): Promise<{ status?: string | n
 
 describe('email sign-up with verification', () => {
   it('stores the user unverified and sends a Vietnamese verification email', async () => {
-    await auth.api.signUpEmail({ body: { email: 'lan@example.com', password: PASSWORD, name: 'Chị Lan' } });
+    await auth.api.signUpEmail({ body: { email: 'lan@example.com', password: PASSWORD, name: 'Chị Lan', consents: CONSENTS } as SignUpBody });
     const { rows } = await client.query<{ email_verified: boolean }>(
       `select email_verified from auth.user where email = 'lan@example.com'`,
     );
@@ -93,7 +96,7 @@ describe('email sign-up with verification', () => {
 
   it('rejects passwords shorter than 8 characters', async () => {
     const error = await errorOf(
-      auth.api.signUpEmail({ body: { email: 'short@example.com', password: 'ngan', name: 'Short' } }),
+      auth.api.signUpEmail({ body: { email: 'short@example.com', password: 'ngan', name: 'Short', consents: CONSENTS } as SignUpBody }),
     );
     expect(error).not.toBeNull();
   });
@@ -119,7 +122,7 @@ describe('breached-password check', () => {
       }),
     );
     const error = await errorOf(
-      checked.api.signUpEmail({ body: { email: 'pwned@example.com', password: 'password123', name: 'P' } }),
+      checked.api.signUpEmail({ body: { email: 'pwned@example.com', password: 'password123', name: 'P', consents: CONSENTS } as SignUpBody }),
     );
     expect(error?.message).toContain('Mật khẩu này đã xuất hiện');
     expect(requested).toHaveLength(1);
@@ -152,7 +155,7 @@ describe('abuse protections', () => {
   it('answers a duplicate sign-up like a new one and emails the existing owner instead', async () => {
     const before = email.sent.length;
     const result = await auth.api.signUpEmail({
-      body: { email: 'lan@example.com', password: 'another-long-password-2026', name: 'Someone' },
+      body: { email: 'lan@example.com', password: 'another-long-password-2026', name: 'Someone', consents: CONSENTS } as SignUpBody,
     });
     expect(result.user.email).toBe('lan@example.com');
     expect(email.sent.slice(before).map((m) => m.subject)).toEqual(['Bạn đã có tài khoản Seller Advisor']);
@@ -183,5 +186,39 @@ describe('abuse protections', () => {
     expect(statuses[5]).toBe(429);
     const { rows } = await client.query<{ n: number }>(`select count(*)::int as n from auth.rate_limit`);
     expect(rows[0]?.n).toBeGreaterThan(0);
+  });
+});
+
+describe('consents at sign-up', () => {
+  it('refuses sign-up without the required service consent', async () => {
+    const error = await errorOf(
+      auth.api.signUpEmail({
+        body: { email: 'noconsent@example.com', password: PASSWORD, name: 'N', consents: { ...CONSENTS, service_processing: false } } as SignUpBody,
+      }),
+    );
+    expect((error as { body?: { code?: string } } | null)?.body?.code).toBe('SERVICE_CONSENT_REQUIRED');
+    const { rows } = await client.query(`select id from auth.user where email = 'noconsent@example.com'`);
+    expect(rows).toEqual([]);
+  });
+
+  it('records each choice with the policy version and the hash of the text shown', async () => {
+    const { rows } = await client.query<{ purpose: string; granted: boolean; policy_version: string; ui_text_hash: string }>(
+      `select c.purpose, c.granted, c.policy_version, c.ui_text_hash from app.consent_record c
+       join auth.user u on u.id = c.user_id where u.email = 'lan@example.com' order by c.purpose`,
+    );
+    expect(rows.map((r) => [r.purpose, r.granted])).toEqual([
+      ['anonymised_benchmarking', false],
+      ['marketing', true],
+      ['service_processing', true],
+    ]);
+    expect(new Set(rows.map((r) => r.policy_version))).toEqual(new Set([CONSENT_POLICY_VERSION]));
+    expect(rows[0]?.ui_text_hash).toBe(consentTextHash());
+  });
+
+  it('records no consents for a duplicate sign-up', async () => {
+    const { rows } = await client.query<{ n: number }>(
+      `select count(*)::int as n from app.consent_record c join auth.user u on u.id = c.user_id where u.email = 'lan@example.com'`,
+    );
+    expect(rows[0]?.n).toBe(3);
   });
 });
