@@ -16,6 +16,7 @@ import {
 import { rowsOf } from './rows';
 import { createShop } from './shops';
 import { listSkuCosts, setUnitCost } from './costs';
+import { recordLlmCall } from './llm';
 
 const USER = 'ingest-owner';
 const HASH_A = 'a'.repeat(64);
@@ -180,5 +181,14 @@ describe('costs', () => {
     const after = await inShop((tx) => listSkuCosts(tx, shopId, '2026-11-05'));
     expect(after.map((c) => c.cogsVnd)).toEqual([null, 350n]);
     expect(await inShop((tx) => listSkuCosts(tx, shopId, '2026-11-04')).then((r) => r.every((c) => c.cogsVnd === null))).toBe(true);
+  });
+});
+
+describe('llm call log', () => {
+  it('records call metadata for the shop', async () => {
+    await inShop((tx) =>
+      recordLlmCall(tx, { shopId, purpose: 'explain', model: 'claude-opus-5-5', inputTokens: 2000, outputTokens: 600, cacheReadTokens: 1500, latencyMs: 812, costUsd: 0.0203, validation: 'passed' }),
+    );
+    expect(await count('llm_call').catch(() => 'no-select')).toBe('no-select');
   });
 });
