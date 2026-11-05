@@ -9,6 +9,8 @@ An AI decision assistant for small Vietnamese Shopee sellers. It turns their exp
 | Path | What |
 | --- | --- |
 | `docs/STATUS.md` | Current stage, next slice, blockers, environment facts, gotchas. Read first; update in every slice PR |
+| `docs/README.md` | Index of every document, for people and agents |
+| `docs/case-study.md` | Decisions and trade-offs for BA readers. Add a row when a slice makes a significant decision or trade-off |
 | `docs/discovery/discovery-summary.md` | Requirement, story, risk and metric IDs (FR-xx, NFR-xx, US-xx, R-x). Cite these IDs. |
 | `Shopee Seller Advisor — BA Discovery Pack.docx` | Full discovery pack (human-readable record) |
 | `docs/design/` | System design: architecture, schema, security, parser, engine, LLM, infra, delivery plan (with the go-live checklist), traceability |
