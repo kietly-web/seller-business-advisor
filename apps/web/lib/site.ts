@@ -6,6 +6,6 @@ export function siteUrl(env: Record<string, string | undefined> = process.env): 
 
 export const PUBLIC_PATHS = ['/', '/dang-ky', '/dang-nhap'] as const;
 
-export const PRIVATE_PATHS = ['/tong-quan', '/bat-dau', '/cai-dat', '/dong-y', '/kiem-tra-email', '/tai-len', '/gia-von', '/loi-nhuan', '/mau/', '/api/'] as const;
+export const PRIVATE_PATHS = ['/tong-quan', '/bat-dau', '/cai-dat', '/dong-y', '/kiem-tra-email', '/tai-len', '/gia-von', '/loi-nhuan', '/hanh-dong', '/doi-thu', '/mau/', '/api/'] as const;
 
 export const noIndex = { robots: { index: false, follow: false } } as const;

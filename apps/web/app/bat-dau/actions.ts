@@ -1,9 +1,11 @@
 'use server';
 
-import { appDb, ShopAlreadyExistsError } from '@sa/db';
-import { toIctDate, type ShopId } from '@sa/shared';
+import { appDb, ShopAlreadyExistsError, withShopContext } from '@sa/db';
+import { asUserId, toIctDate, type ShopId } from '@sa/shared';
 import { redirect } from 'next/navigation';
 import { seedDemoShop } from '../../server/demo-seed';
+import { explainForShop } from '../../server/llm';
+import { runRecommendations } from '../../server/weekly-run';
 import { createShopForUser, demoShopInput, parseOnboarding, type FieldErrors } from '../../server/onboarding';
 import { myShops, requireConsentedUser } from '../../server/session';
 
@@ -34,6 +36,7 @@ export async function createDemoShopAction(): Promise<void> {
   const shopId = await createOnce(user.id, demoShopInput());
   if (shopId) {
     await seedDemoShop(appDb(), { userId: user.id, shopId }, toIctDate(new Date()));
+    await firstRun(user.id, shopId);
   }
   redirect('/tong-quan');
 }
@@ -47,4 +50,14 @@ async function createOnce(userId: string, input: Parameters<typeof createShopFor
     }
     return null;
   }
+}
+
+// The demo shop opens with this week's cards already there
+async function firstRun(userId: string, shopId: ShopId): Promise<void> {
+  const db = appDb();
+  await runRecommendations(
+    (fn) => withShopContext(db, { role: 'sa_app', shopId, userId: asUserId(userId) }, fn),
+    shopId,
+    { trigger: 'on_demand', now: new Date(), explain: explainForShop(db, shopId) },
+  );
 }
