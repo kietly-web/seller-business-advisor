@@ -1,8 +1,12 @@
+import type { Metadata } from 'next';
+import { noIndex } from '../../lib/site';
 import { redirect } from 'next/navigation';
 import { t } from '../../lib/messages';
 import { myShops, requireConsentedUser } from '../../server/session';
 import { createDemoShopAction } from './actions';
 import { OnboardingForm } from './onboarding-form';
+
+export const metadata: Metadata = { title: t.onboarding.title, ...noIndex };
 
 export const dynamic = 'force-dynamic';
 

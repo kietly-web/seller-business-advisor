@@ -1,11 +1,21 @@
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
+import { t } from '../lib/messages';
+import { siteUrl } from '../lib/site';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Seller Advisor',
-  description: 'Trợ lý ra quyết định cho người bán Shopee',
-  robots: { index: false, follow: false },
+  metadataBase: siteUrl(),
+  title: { default: t.app.title, template: `%s | ${t.app.name}` },
+  description: t.app.description,
+  alternates: { canonical: '/' },
+  openGraph: {
+    type: 'website',
+    locale: 'vi_VN',
+    siteName: t.app.name,
+    title: t.app.title,
+    description: t.app.description,
+  },
 };
 
 export const viewport: Viewport = {

@@ -1,9 +1,13 @@
+import type { Metadata } from 'next';
+import { noIndex } from '../../lib/site';
 import { appDb, currentConsents, withUserContext } from '@sa/db';
 import { asUserId } from '@sa/shared';
 import Link from 'next/link';
 import { t } from '../../lib/messages';
 import { requireConsentedUser } from '../../server/session';
 import { ConsentSettingsForm } from './consent-settings-form';
+
+export const metadata: Metadata = { title: t.settings.title, ...noIndex };
 
 export const dynamic = 'force-dynamic';
 

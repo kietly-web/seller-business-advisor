@@ -1,7 +1,7 @@
 import 'server-only';
 import { appDb } from '@sa/db';
 import { createAuth, type Auth } from './auth';
-import { assertProductionAuthConfig } from './auth-config';
+import { AuthNotConfiguredError, assertProductionAuthConfig } from './auth-config';
 import { createEmailSender } from './email';
 
 let instance: Auth | undefined;
@@ -9,7 +9,7 @@ let instance: Auth | undefined;
 function requireEnv(name: string): string {
   const value = process.env[name];
   if (!value) {
-    throw new Error(`${name} is not set`);
+    throw new AuthNotConfiguredError(`${name} is not set`);
   }
   return value;
 }
