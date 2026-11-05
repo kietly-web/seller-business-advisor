@@ -55,6 +55,15 @@ Each rule is a module: `{ code, version, actionType, applies(ctx), evaluate(ctx)
 
 Price-change impact uses a deliberately simple, visible elasticity assumption: a 1% price rise reduces units by 0%–1.5% (low/high bounds). The range is the CM change across those two bounds over 30 days. The card's confidence label tells the seller this is an estimate. The elasticity bounds are per-category config, to tune from outcome data.
 
+Implementation notes (rules v1, `packages/engine/src/rules`):
+
+- Rules read the last 4 ISO weeks ending at the run week (units, revenue, fees, cost and margin over 28 days), plus that week and the one before for `NEGATIVE_MARGIN`.
+- `NEGATIVE_MARGIN` proposes `stop_discount` when the shop funded a discount that week, otherwise `raise_price`.
+- `STOCKOUT_RISK` uses a default lead time of 7 days and fires only for SKUs with a positive margin per unit; restocking a loss-maker is not advice.
+- A campaign week is the latest of the last 4 weeks that contains a mega-sale day (1.1 … 12.12). `CAMPAIGN_UNPROFITABLE` fires only if the SKU was profitable in the 4 weeks before it. A SKU that loses money anyway belongs to `NEGATIVE_MARGIN`.
+- Impacts carry a kind: `margin` (30-day contribution margin), `cash` (`DEAD_STOCK`) or `avoided_loss` (`CAMPAIGN_UNPROFITABLE`, per campaign).
+- Static Vietnamese card templates and Seller Centre checklists live in `rules/templates.ts`. Templates contain no figures outside `{{placeholders}}`, and every placeholder must exist in the rule's facts (golden-set check).
+
 ### Data sufficiency (US-05)
 
 - A shop needs ≥ 4 complete ISO weeks of orders. Otherwise the run status is `insufficient_data` and the UI shows what is missing.
@@ -66,8 +75,8 @@ Price-change impact uses a deliberately simple, visible elasticity assumption: a
 ```
 score = midpoint(impact_low, impact_high) × confidence × ease
 confidence = baseConfidence × dataQuality × learned
-dataQuality ∈ [0.5, 1] = f(weeks of history, cost coverage, sample size)
-learned = posterior mean of Beta(α, β) for the rule (shop-level, shrunk toward global) ÷ global prior mean, clamped [0.5, 1.5]
+dataQuality = 0.5 + 0.5 × mean(min(weeks of history, 12) ÷ 12, share of 28-day revenue with a cost, min(SKU units in 28 days ÷ 30, 1))
+learned = posterior mean of Beta(global α + shop α, global β + shop β) ÷ global prior mean, clamped [0.5, 1.5]; 1 with no outcomes yet
 ```
 
 Selection:
@@ -104,4 +113,4 @@ The simulator uses the same `impact()` functions run interactively: the seller p
 
 ## Golden set
 
-`packages/engine/golden/` holds scenario files (YAML): a synthetic fact snapshot plus the expected candidates, ranks and fact values. It starts with 20 scenarios: each rule firing, each rule correctly *not* firing near its threshold, the insufficient-data paths, cooldown and diversity limits, the allocation reconciliation, and the outcome classification cases. It runs in CI on every change to `engine`, `llm` or prompts. The same scenarios drive the LLM checks in [06](06-llm-integration.md#evaluation).
+`packages/engine/src/golden/scenarios.ts` holds the scenarios as typed data built with small helpers (`builders.ts`): a metric and SKU snapshot plus the expected recommendations, ranks, facts, drops and skips. TypeScript instead of YAML keeps the scenarios type-checked against the engine and importable by the LLM checks. It has 22 scenarios: each rule firing, each rule correctly *not* firing near its threshold, the insufficient-data and minimum-units paths, cooldown, dismissal, the per-SKU, per-type and top-5 limits, and the missing-cost banner. Every run also checks that each card's template placeholders exist in its facts and its checklist exists. Fee-allocation reconciliation is tested in `metrics.test.ts`; outcome classification cases arrive with `measureOutcome` (SA-501). It runs in CI on every change to `engine`, `llm` or prompts. The same scenarios drive the LLM checks in [06](06-llm-integration.md#evaluation).

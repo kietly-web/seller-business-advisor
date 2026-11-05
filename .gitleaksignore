@@ -1,3 +1,6 @@
 # Verified false positives: a dummy auth secret in a test, replaced by a runtime-generated value in the next commit
 535212f4600f2f52831a259e6b4008ffd0279e9d:apps/web/server/auth.test.ts:generic-api-key:37
 535212f4600f2f52831a259e6b4008ffd0279e9d:apps/web/server/auth.test.ts:generic-api-key:107
+# False positive: checklistKey literals read as a generic API key (later derived from the action type)
+c72605dbb79554a1fb9c192de9a1b161cb774f2f:packages/engine/src/rules/library.ts:generic-api-key:222
+c72605dbb79554a1fb9c192de9a1b161cb774f2f:packages/engine/src/rules/library.ts:generic-api-key:299
