@@ -104,10 +104,11 @@ create table app.upload (
 create table app.ingest_stage (          -- chunk landing zone; emptied when the upload completes or fails
   upload_id uuid not null references app.upload(id) on delete cascade,
   shop_id uuid not null,
-  record_kind text not null,             -- 'order_line' | 'fee_line' | 'product_traffic' | 'sku' | 'stock'
+  record_kind text not null,             -- 'order_line' | 'fee_line' | 'product_traffic' | 'sku' | 'stock' | 'unit_cost'
   source_row int not null,
   record jsonb not null,                 -- canonical shape, already zod-validated
-  primary key (upload_id, record_kind, source_row)
+  seq int not null default 0,            -- fee type index for income rows (one row → several fee lines)
+  primary key (shop_id, upload_id, record_kind, source_row, seq)
 );
 ```
 
@@ -123,6 +124,7 @@ create table app.sku (
   shop_id uuid not null references app.shop(id) on delete cascade,
   platform_item_id text, platform_model_id text,   -- Shopee item / variation IDs when present
   seller_sku text,                                 -- seller's own SKU code
+  sku_key text,                                    -- parser key (sku:<seller_sku> or name:<item>|<variation>); unique per shop
   name text not null, variation text,
   active boolean not null default true,
   unique (shop_id, platform_item_id, platform_model_id)
