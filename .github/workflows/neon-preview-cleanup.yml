@@ -1,0 +1,33 @@
+name: Neon preview cleanup
+
+on:
+  pull_request:
+    types: [closed]
+
+permissions: {}
+
+jobs:
+  delete-preview-branch:
+    # Secrets are unavailable to fork PRs; their previews have no Neon branch to clean anyway
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Delete the Neon branch the Vercel integration created for this PR
+        env:
+          NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+          NEON_PROJECT_ID: ${{ vars.NEON_PROJECT_ID }}
+          # Passed via env, never interpolated into the script
+          BRANCH: preview/${{ github.event.pull_request.head.ref }}
+        run: |
+          if [ -z "$NEON_API_KEY" ] || [ -z "$NEON_PROJECT_ID" ]; then
+            echo "::error::Set the NEON_API_KEY secret and NEON_PROJECT_ID variable (see docs/design/07-infrastructure.md)."
+            exit 1
+          fi
+          existing=$(npx --yes neonctl@8.18.0 branches list --project-id "$NEON_PROJECT_ID" --output json | jq -r --arg b "$BRANCH" '(if type == "array" then . else .branches end)[] | select(.name == $b) | .id')
+          if [ -z "$existing" ]; then
+            echo "No Neon branch named $BRANCH; nothing to delete."
+            exit 0
+          fi
+          npx --yes neonctl@8.18.0 branches delete "$existing" --project-id "$NEON_PROJECT_ID"
+          echo "Deleted Neon branch $BRANCH ($existing)."
