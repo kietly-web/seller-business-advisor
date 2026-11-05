@@ -6,6 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { saveCost } from './costs';
 import { seedDemoShop } from './demo-seed';
 import { recomputeMetrics } from './metrics';
+import { pickWeek, skuWeekDetail, totalsOf, weekProfit } from './profit';
 
 const TODAY = asIsoDate('2026-11-05');
 let client: PGlite;
@@ -104,4 +105,41 @@ describe('weekly metrics on the demo shop', () => {
     expect(detail?.metric?.stockCoverDays).toBe(Number.POSITIVE_INFINITY);
     expect((await recomputeMetrics(db, who)).deleted).toBe(1);
   });
+
+  it('opens on the latest finished week, with totals that exclude SKUs missing a cost', async () => {
+    const now = new Date('2026-11-05T03:00:00Z');
+    const started = performance.now();
+    const view = await weekProfit(db, who, undefined, now);
+    // NFR-PERF: the view reads precomputed rows only, never raw order lines
+    expect(performance.now() - started).toBeLessThan(500);
+    expect(view.week).toBe('2026-W44');
+    expect(view.rows.length).toBeGreaterThan(10);
+    expect(view.totals.netRevenueVnd).toBe(view.rows.reduce((s, r) => s + r.netRevenueVnd, 0n));
+    expect((await weekProfit(db, who, '2026-W40', now)).week).toBe('2026-W40');
+    expect((await weekProfit(db, who, "2026-W40' or 1=1", now)).week).toBe('2026-W44');
+    expect(await skuWeekDetail(db, who, 'not-a-uuid', '2026-W40')).toBeNull();
+  });
 });
+
+describe('profit helpers', () => {
+  const W = (s: string) => asIsoWeek(s);
+
+  it('picks the requested week only if it has data, else the latest finished week', () => {
+    const weeks = [W('2026-W45'), W('2026-W44'), W('2026-W43')];
+    const now = new Date('2026-11-05T03:00:00Z');
+    expect(pickWeek(weeks, W('2026-W43'), now)).toBe('2026-W43');
+    expect(pickWeek(weeks, W('2026-W01'), now)).toBe('2026-W44');
+    expect(pickWeek([W('2026-W45')], null, now)).toBe('2026-W45');
+    expect(pickWeek([], null, now)).toBeNull();
+  });
+
+  it('totals margin over costed SKUs only', () => {
+    const base = { skuId: asSkuId('00000000-0000-0000-0000-000000000001'), name: 'A', variation: null, units: 1, platformFeesVnd: 10n };
+    const totals = totalsOf([
+      { ...base, netRevenueVnd: 100n, cogsVnd: 40n, contributionMarginVnd: 50n, marginPct: 0.5 },
+      { ...base, netRevenueVnd: 300n, cogsVnd: null, contributionMarginVnd: null, marginPct: null },
+    ]);
+    expect(totals).toMatchObject({ netRevenueVnd: 400n, platformFeesVnd: 20n, contributionMarginVnd: 50n, marginPct: 0.5, missingCost: 1 });
+  });
+});
+

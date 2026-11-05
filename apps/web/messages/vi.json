@@ -87,7 +87,8 @@
     "uploadLink": "Tải lên dữ liệu",
     "costsLink": "Giá vốn",
     "uploadsTitle": "Các lần tải lên gần đây",
-    "noUploads": "Chưa có dữ liệu nào được tải lên."
+    "noUploads": "Chưa có dữ liệu nào được tải lên.",
+    "profitLink": "Lợi nhuận theo tuần"
   },
   "settings": {
     "title": "Cài đặt",
@@ -181,5 +182,43 @@
     "empty": "Chưa có sản phẩm. Hãy tải lên file đơn hàng trước.",
     "invalid": "Nhập số tiền hợp lệ, ví dụ 85.000.",
     "backLink": "Về trang tổng quan"
+  },
+  "profit": {
+    "title": "Lợi nhuận theo tuần",
+    "intro": "Tính từ đơn đã hoàn thành trong tuần, trừ giảm giá của shop, phí Shopee và giá vốn.",
+    "weekLabel": "Tuần",
+    "weekOption": "Tuần {n} ({from} – {to})",
+    "show": "Xem",
+    "empty": "Chưa có đơn hoàn thành nào. Hãy tải lên file đơn hàng và báo cáo thu nhập.",
+    "netRevenue": "Doanh thu thuần",
+    "fees": "Phí Shopee",
+    "cogs": "Giá vốn",
+    "margin": "Lãi sau phí và giá vốn",
+    "marginPct": "Biên lãi",
+    "units": "{n} sp",
+    "product": "Sản phẩm",
+    "costMissing": "Thiếu giá vốn",
+    "costMissingNote": "{n} sản phẩm chưa có giá vốn nên chưa tính lãi. Tổng lãi bên dưới chỉ gồm sản phẩm đã có giá vốn.",
+    "enterCosts": "Nhập giá vốn",
+    "unallocatedFees": "Phí của đơn không hoàn thành trong dữ liệu (đơn huỷ, trả hàng hoặc chưa có trong file đơn hàng): {amount}. Khoản này chưa gắn với sản phẩm nào.",
+    "totals": "Cả tuần",
+    "noIncome": "Chưa có phí Shopee cho tuần này. Hãy tải lên báo cáo thu nhập để lãi được tính đúng.",
+    "detailTitle": "Chi tiết tuần {n}",
+    "orders": "Số đơn",
+    "unitsLabel": "Số lượng bán",
+    "grossRevenue": "Doanh thu (giá bán × số lượng)",
+    "sellerDiscount": "Giảm giá của shop",
+    "avgPrice": "Giá bán trung bình",
+    "onHand": "Tồn kho",
+    "stockCover": "Đủ bán khoảng {n} ngày",
+    "stockCoverNoSales": "Không bán được trong 28 ngày",
+    "sourceTitle": "Dòng dữ liệu gốc",
+    "sourceNote": "Mỗi dòng dưới đây lấy từ file bạn đã tải lên (tên file và số dòng).",
+    "sourceRow": "{file}, dòng {row}",
+    "sourceLimit": "Chỉ hiện 500 dòng đầu.",
+    "completedOn": "Hoàn thành {date}",
+    "notFound": "Không có dữ liệu cho sản phẩm này trong tuần đã chọn.",
+    "backLink": "Về bảng lợi nhuận",
+    "dashboardLink": "Về trang tổng quan"
   }
 }
