@@ -141,7 +141,7 @@ Required for a professional launch but deliberately not built yet. Each line nam
 | Production env in Vercel: `BETTER_AUTH_SECRET` (≥ 32 chars), `BETTER_AUTH_URL` (https), `AWS_SES_REGION`, `EMAIL_FROM`, AWS SES credentials, `CRON_SECRET`, `ANTHROPIC_API_KEY` | Owner |
 | SES: verify the sending domain, SPF/DKIM/DMARC, request production access | Owner |
 | Branch protection on `main` with required checks; GitHub auto-merge allowed | Owner |
-| `VERCEL_AUTOMATION_BYPASS_SECRET` (Vercel → Deployment Protection → Protection Bypass for Automation) as a GitHub secret, so `smoke.yml` also checks previews before merge | Owner |
+| Smoke-test previews before merge: `VERCEL_AUTOMATION_BYPASS_SECRET` (Vercel → Deployment Protection → Protection Bypass for Automation) plus a way to get each preview URL (Vercel GitHub Deployments or the Vercel API) | Owner + Claude |
 | Before real sellers: privacy policy and terms live, so indexed public pages link to them | Claude drafts, owner approves |
 | Vercel Pro (commercial use, per-minute cron) and register the drain cron | Owner + Claude |
 | Vercel Firewall rate rule on `/api/auth/sign-in/*` | Owner |
