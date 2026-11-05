@@ -37,7 +37,7 @@ export async function decideAction(form: FormData): Promise<void> {
 export async function rateAction(form: FormData): Promise<void> {
   const parsed = parseRating(form);
   if (!parsed) return;
-  const { shop, inShop } = await shopTx();
-  await inShop((tx) => rateRecommendation(tx, shop.id, parsed.recommendationId, parsed.rating));
+  const { user, shop, inShop } = await shopTx();
+  await inShop((tx) => rateRecommendation(tx, { shopId: shop.id, userId: user.id, ...parsed }));
   revalidatePath('/hanh-dong');
 }

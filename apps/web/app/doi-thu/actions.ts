@@ -17,7 +17,8 @@ async function saveInShop(fn: (tx: Tx, ids: { shopId: Awaited<ReturnType<typeof 
   const { user, shop } = await requireShop();
   try {
     await withShopContext(appDb(), { role: 'sa_app', shopId: shop.id, userId: asUserId(user.id) }, (tx) => fn(tx, { shopId: shop.id, userId: user.id }));
-  } catch {
+  } catch (error) {
+    console.error(`[competitors] save failed: ${error instanceof Error ? error.constructor.name : 'unknown'}`);
     return { status: 'error', error: 'generic' };
   }
   revalidatePath('/doi-thu');
@@ -27,7 +28,7 @@ async function saveInShop(fn: (tx: Tx, ids: { shopId: Awaited<ReturnType<typeof 
 export async function addListingAction(_prev: CompetitorFormState, form: FormData): Promise<CompetitorFormState> {
   const parsed = parseListing(form);
   if (!parsed.ok) return { status: 'error', error: parsed.error };
-  return saveInShop((tx, { shopId }) => addCompetitorListing(tx, { shopId, skuId: parsed.skuId, url: parsed.url, label: parsed.label }));
+  return saveInShop((tx, { shopId, userId }) => addCompetitorListing(tx, { shopId, userId, skuId: parsed.skuId, url: parsed.url, label: parsed.label }));
 }
 
 export async function addObservationAction(_prev: CompetitorFormState, form: FormData): Promise<CompetitorFormState> {

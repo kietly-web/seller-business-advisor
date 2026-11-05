@@ -22,11 +22,3 @@ export function explainForShop(db: Db, shopId: ShopId): (input: ExplainInput) =>
   };
 }
 
-/** Explain inside a job that already holds a worker transaction for the shop. */
-export function explainInJob(tx: Tx, shopId: ShopId): (input: ExplainInput) => Promise<ExplainResult> {
-  return async (input) => {
-    const result = await client().explainRecommendations(input);
-    if (result.call) await record(tx, shopId, result.call);
-    return result;
-  };
-}

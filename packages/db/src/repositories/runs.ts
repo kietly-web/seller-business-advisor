@@ -128,12 +128,40 @@ export interface NewRecommendation {
   textSource: 'llm' | 'template';
 }
 
-export interface NewRun {
+export type ReserveResult = { reserved: true; runId: string } | { reserved: false; reason: 'rate_limited' | 'already_ran' };
+
+/**
+ * Serialises runs per shop (advisory lock), checks the limits and inserts a `running` row before any model call,
+ * so parallel requests and failed attempts both count toward the on-demand limit.
+ */
+export async function reserveRun(
+  tx: Tx,
+  input: { shopId: ShopId; isoWeek: string; trigger: 'weekly' | 'on_demand'; engineVersion: string; onDemandSince: Date; onDemandLimit: number },
+): Promise<ReserveResult> {
+  await tx.execute(sql`select pg_advisory_xact_lock(hashtext(${`recommendation_run:${input.shopId}`}))`);
+  if (input.trigger === 'on_demand' && (await countOnDemandRunsSince(tx, input.shopId, input.onDemandSince)) >= input.onDemandLimit) {
+    return { reserved: false, reason: 'rate_limited' };
+  }
+  if (input.trigger === 'weekly') {
+    const [existing] = await tx
+      .select({ id: recommendationRun.id })
+      .from(recommendationRun)
+      .where(and(eq(recommendationRun.shopId, input.shopId), eq(recommendationRun.trigger, 'weekly'), eq(recommendationRun.isoWeek, input.isoWeek)))
+      .limit(1);
+    if (existing) return { reserved: false, reason: 'already_ran' };
+  }
+  const [created] = await tx
+    .insert(recommendationRun)
+    .values({ shopId: input.shopId, isoWeek: input.isoWeek, trigger: input.trigger, status: 'running', engineVersion: input.engineVersion })
+    .returning({ id: recommendationRun.id });
+  if (!created) throw new Error('Run could not be reserved');
+  return { reserved: true, runId: created.id };
+}
+
+export interface FinishedRun {
   shopId: ShopId;
-  isoWeek: string;
-  trigger: 'weekly' | 'on_demand';
-  status: 'succeeded' | 'insufficient_data' | 'failed';
-  engineVersion: string;
+  runId: string;
+  status: 'succeeded' | 'insufficient_data';
   llmModel: string | null;
   llmFallbackUsed: boolean | null;
   notes: Record<string, unknown>;
@@ -141,31 +169,20 @@ export interface NewRun {
 }
 
 // A new run replaces the cards still on screen: older unanswered cards expire
-export async function saveRun(tx: Tx, run: NewRun): Promise<string> {
+export async function finishRun(tx: Tx, run: FinishedRun): Promise<void> {
   await tx
     .update(recommendation)
     .set({ status: 'expired' })
     .where(and(eq(recommendation.shopId, run.shopId), eq(recommendation.status, 'shown')));
-  const [created] = await tx
-    .insert(recommendationRun)
-    .values({
-      shopId: run.shopId,
-      isoWeek: run.isoWeek,
-      trigger: run.trigger,
-      status: run.status,
-      engineVersion: run.engineVersion,
-      llmModel: run.llmModel,
-      llmFallbackUsed: run.llmFallbackUsed,
-      notes: run.notes,
-      finishedAt: sql`now()`,
-    })
-    .returning({ id: recommendationRun.id });
-  if (!created) throw new Error('Run could not be saved');
+  await tx
+    .update(recommendationRun)
+    .set({ status: run.status, llmModel: run.llmModel, llmFallbackUsed: run.llmFallbackUsed, notes: run.notes, finishedAt: sql`now()` })
+    .where(and(eq(recommendationRun.shopId, run.shopId), eq(recommendationRun.id, run.runId)));
   if (run.recommendations.length > 0) {
     await tx.insert(recommendation).values(
       run.recommendations.map((r) => ({
         shopId: run.shopId,
-        runId: created.id,
+        runId: run.runId,
         skuId: r.skuId,
         ruleCode: r.ruleCode,
         ruleVersion: r.ruleVersion,
@@ -183,7 +200,13 @@ export async function saveRun(tx: Tx, run: NewRun): Promise<string> {
       })),
     );
   }
-  return created.id;
+}
+
+export async function failRun(tx: Tx, shopId: ShopId, runId: string): Promise<void> {
+  await tx
+    .update(recommendationRun)
+    .set({ status: 'failed', finishedAt: sql`now()` })
+    .where(and(eq(recommendationRun.shopId, shopId), eq(recommendationRun.id, runId)));
 }
 
 export async function countOnDemandRunsSince(tx: Tx, shopId: ShopId, since: Date): Promise<number> {
@@ -228,7 +251,7 @@ export async function latestRun(tx: Tx, shopId: ShopId): Promise<LatestRun | nul
   const [run] = await tx
     .select()
     .from(recommendationRun)
-    .where(eq(recommendationRun.shopId, shopId))
+    .where(and(eq(recommendationRun.shopId, shopId), inArray(recommendationRun.status, ['succeeded', 'insufficient_data'])))
     .orderBy(desc(recommendationRun.startedAt))
     .limit(1);
   if (!run) return null;
@@ -304,12 +327,14 @@ export async function decideRecommendation(tx: Tx, input: { shopId: ShopId; reco
   return true;
 }
 
-export async function rateRecommendation(tx: Tx, shopId: ShopId, recommendationId: string, rating: number): Promise<boolean> {
-  if (!Number.isInteger(rating) || rating < 1 || rating > 5) return false;
+export async function rateRecommendation(tx: Tx, input: { shopId: ShopId; recommendationId: string; userId: string; rating: number }): Promise<boolean> {
+  if (!Number.isInteger(input.rating) || input.rating < 1 || input.rating > 5) return false;
   const updated = await tx
     .update(recommendation)
-    .set({ rating })
-    .where(and(eq(recommendation.shopId, shopId), eq(recommendation.id, recommendationId)))
+    .set({ rating: input.rating })
+    .where(and(eq(recommendation.shopId, input.shopId), eq(recommendation.id, input.recommendationId), sql`${recommendation.status} <> 'expired'`))
     .returning({ id: recommendation.id });
-  return updated.length > 0;
+  if (updated.length === 0) return false;
+  await appendAudit(tx, { shopId: input.shopId, actor: input.userId, action: 'recommendation.rated', entityId: input.recommendationId, meta: { rating: input.rating } });
+  return true;
 }

@@ -41,6 +41,7 @@ Known gaps carried forward:
 - Very large order+SKU groups could overflow the merge's `int` sum, which rolls back the merge safely.
 - Upload resume after reload isn't built.
 - `llm_call` doesn't store the prompt version or the number of fallback cards yet, and every partial fallback is logged as `failed_placeholder`. Add columns (expand migration) before building the "more than 20% fallback" alert.
+- The weekly cron runs shops one by one for up to 4 minutes; shops not reached run the following week. Fine for a beta; move to the per-minute drain on Vercel Pro before scaling.
 - Each upload recomputes the whole shop's metrics in memory; fine at demo scale, revisit for very large shops (scope by SKU or move to the job once a cron runs).
 
 ## Open PRs

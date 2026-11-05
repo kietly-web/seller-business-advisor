@@ -1,4 +1,4 @@
-import { countOnDemandRunsSince, loadRuleInputs, saveRun, type NewRecommendation, type RuleInputs, type Tx } from '@sa/db';
+import { failRun, finishRun, loadRuleInputs, reserveRun, type NewRecommendation, type RuleInputs, type Tx } from '@sa/db';
 import {
   CHECKLISTS,
   competitorMedian,
@@ -23,7 +23,7 @@ export type Explain = (input: ExplainInput) => Promise<ExplainResult>;
 
 export type RunOutcome =
   | { ok: true; runId: string; status: 'succeeded' | 'insufficient_data'; cards: number }
-  | { ok: false; error: 'rate_limited' };
+  | { ok: false; error: 'rate_limited' | 'already_ran' };
 
 // Recommendations look at the last finished week; the current one is still filling up
 export function runWeek(now: Date): IsoWeek {
@@ -73,12 +73,17 @@ export async function runRecommendations(
 ): Promise<RunOutcome> {
   const week = runWeek(options.now);
   const end = weekEnd(week);
-  const loaded = await inShop(async (tx) => {
-    if (options.trigger === 'on_demand') {
-      const recent = await countOnDemandRunsSince(tx, shopId, new Date(options.now.getTime() - DAY_MS));
-      if (recent >= ON_DEMAND_RUNS_PER_DAY) return null;
-    }
-    return loadRuleInputs(tx, shopId, {
+  const reserved = await inShop(async (tx) => {
+    const reservation = await reserveRun(tx, {
+      shopId,
+      isoWeek: week,
+      trigger: options.trigger,
+      engineVersion: ENGINE_VERSION,
+      onDemandSince: new Date(options.now.getTime() - DAY_MS),
+      onDemandLimit: ON_DEMAND_RUNS_PER_DAY,
+    });
+    if (!reservation.reserved) return reservation;
+    const inputs = await loadRuleInputs(tx, shopId, {
       week,
       weekEnd: end,
       // Stock is what the seller has now, not at the end of the week being analysed
@@ -86,9 +91,26 @@ export async function runRecommendations(
       historyFromWeek: addWeeks(week, -8),
       competitorFrom: addDays(end, -13),
     });
+    return { ...reservation, inputs };
   });
-  if (!loaded) return { ok: false, error: 'rate_limited' };
+  if (!reserved.reserved) return { ok: false, error: reserved.reason };
+  const { runId, inputs: loaded } = reserved;
+  try {
+    return await completeRun(inShop, shopId, runId, week, loaded, options);
+  } catch (error) {
+    await inShop((tx) => failRun(tx, shopId, runId));
+    throw error;
+  }
+}
 
+async function completeRun(
+  inShop: InShop,
+  shopId: ShopId,
+  runId: string,
+  week: IsoWeek,
+  loaded: RuleInputs,
+  options: { trigger: 'weekly' | 'on_demand'; explain: Explain },
+): Promise<RunOutcome> {
   const plan = planRecommendations(contextFrom(loaded, week));
   const cards = plan.recommendations.map((r, i) => ({
     ref: `r${i + 1}`,
@@ -122,13 +144,11 @@ export async function runRecommendations(
     };
   });
   const status = plan.status === 'insufficient_data' ? 'insufficient_data' : 'succeeded';
-  const runId = await inShop((tx) =>
-    saveRun(tx, {
+  await inShop((tx) =>
+    finishRun(tx, {
       shopId,
-      isoWeek: week,
-      trigger: options.trigger,
+      runId,
       status,
-      engineVersion: ENGINE_VERSION,
       llmModel: explained?.call?.model ?? null,
       llmFallbackUsed: explained ? explained.cards.some((c) => c.source === 'template') : null,
       notes: { ...notesOf(plan, loaded), promptVersion: explained?.call?.promptVersion ?? null },

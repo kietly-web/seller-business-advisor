@@ -9,6 +9,7 @@ An AI decision assistant for small Vietnamese Shopee sellers. It turns their exp
 | Path | What |
 | --- | --- |
 | `docs/STATUS.md` | Current stage, next slice, blockers, environment facts, gotchas. Read first; update in every slice PR |
+| `README.md` | Folder map and page list. Update it when you add a top-level folder, package or page |
 | `docs/README.md` | Index of every document, for people and agents |
 | `docs/case-study.md` | Decisions and trade-offs for BA readers. Add a row when a slice makes a significant decision or trade-off |
 | `docs/discovery/discovery-summary.md` | Requirement, story, risk and metric IDs (FR-xx, NFR-xx, US-xx, R-x). Cite these IDs. |

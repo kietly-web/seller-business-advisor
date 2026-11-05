@@ -105,8 +105,8 @@ Each row names the decision, the business reason, the trade-off we accepted, and
 | T6 | **Parsers stay marked "assumed" until 3 real anonymised files pass** | Column names come from memory of Seller Centre, not real exports (Q-D1) | The biggest delivery risk stays open until design partners share files | [04](design/04-ingestion-parser.md) |
 | T7 | **Claude may turn on auto-merge only for conflict-free PRs; the owner resolves conflicts** | Keeps a human on the risky part of merging | The owner is a bottleneck when conflicts happen | [CLAUDE.md](../CLAUDE.md#merging-owners-rule) |
 | T8 | **A smoke check calls the live site after every production deploy** | A production page once returned errors that CI's build didn't catch | One more workflow to maintain | [STATUS](STATUS.md) |
-| T9 | **The weekly run uses one weekly cron that also drains its own jobs** | Vercel's free plan allows one cron a day, and a weekly schedule fits | At most 20 shops per firing; more need the paid plan's per-minute drain | [07](design/07-infrastructure.md) |
-| T10 | **The AI is called outside database transactions** | A slow AI call must never hold a database connection | The run is two short transactions instead of one atomic one; a crash between them loses that run, not data | [05 Run](design/05-recommendation-engine.md#run-sa-406) |
+| T9 | **The weekly run uses one weekly cron that runs each shop directly** | Vercel's free plan allows one cron a day, and a weekly schedule fits | Only the shops reached within 4 minutes run that week; more need the paid plan | [07](design/07-infrastructure.md) |
+| T10 | **The AI is called outside database transactions; a run is reserved before the call** | A slow AI call must never hold a database connection, and parallel refreshes must not bypass the daily limit | A run is three short steps (reserve, call, finish); a crash leaves a `running` or `failed` row that still counts toward the limit | [05 Run](design/05-recommendation-engine.md#run-sa-406) |
 
 ## 4. What's still open
 
@@ -119,6 +119,8 @@ Each row names the decision, the business reason, the trade-off we accepted, and
 | Privacy policy, terms and legal pages | Required before the first real seller (P6) | Owner, counsel |
 | Outcome measurement, data export and account deletion | Closes the loop on "did it pay off" and data rights (Slice H) | Next slice |
 | `CRON_SECRET` in Vercel | Without it the weekly cards don't generate automatically | Owner |
+| Whether rule-based cards with template text also need the "AI-generated" label | Today they say "generated automatically"; Law 134/2025 may require the AI label for the whole system (Q-L3) | Counsel |
+| Weekly cron capacity | One firing covers the shops it reaches in 4 minutes; the rest wait a week until the paid plan's per-minute drain | Owner, before beta |
 
 ## 5. Lessons learned
 

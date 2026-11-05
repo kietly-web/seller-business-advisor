@@ -36,7 +36,10 @@ export async function createDemoShopAction(): Promise<void> {
   const shopId = await createOnce(user.id, demoShopInput());
   if (shopId) {
     await seedDemoShop(appDb(), { userId: user.id, shopId }, toIctDate(new Date()));
-    await firstRun(user.id, shopId);
+    // The demo still opens if the first run fails; the seller can refresh the cards later
+    await firstRun(user.id, shopId).catch((error: unknown) =>
+      console.error(`[demo] first run failed: ${error instanceof Error ? error.constructor.name : 'unknown'}`),
+    );
   }
   redirect('/tong-quan');
 }

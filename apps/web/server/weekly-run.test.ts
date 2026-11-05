@@ -88,8 +88,8 @@ describe('weekly run', () => {
     expect(await decide(a.id, { action: 'done' })).toBe(true);
     expect(await decide(a.id, { action: 'dismiss', reason: 'other' })).toBe(false);
     expect(await decide(b.id, { action: 'dismiss', reason: 'not_relevant' })).toBe(true);
-    expect(await inShop((tx) => rateRecommendation(tx, shopId, a.id, 4))).toBe(true);
-    expect(await inShop((tx) => rateRecommendation(tx, shopId, a.id, 9))).toBe(false);
+    expect(await inShop((tx) => rateRecommendation(tx, { shopId, recommendationId: a.id, userId: USER, rating: 4 }))).toBe(true);
+    expect(await inShop((tx) => rateRecommendation(tx, { shopId, recommendationId: a.id, userId: USER, rating: 9 }))).toBe(false);
     const after = await inShop((tx) => latestRun(tx, shopId));
     expect(after?.cards.find((c) => c.id === a.id)).toMatchObject({ status: 'done', rating: 4 });
     expect(after?.cards.find((c) => c.id === b.id)).toMatchObject({ status: 'dismissed', dismissReason: 'not_relevant' });
@@ -104,7 +104,7 @@ describe('weekly run', () => {
       ['https://shopee.vn/b-i.1.2', 170_000n, -5],
       ['https://shopee.vn/c-i.1.3', 90_000n, -30],
     ] as const) {
-      const listingId = await inShop((tx) => addCompetitorListing(tx, { shopId, skuId: sku.skuId, url, label: null }));
+      const listingId = await inShop((tx) => addCompetitorListing(tx, { shopId, userId: USER, skuId: sku.skuId, url, label: null }));
       await inShop((tx) => addCompetitorObservation(tx, { shopId, listingId, userId: USER, priceVnd: price, observedOn: addDays(end, day), note: null }));
     }
     const inputs = await inShop((tx) =>
@@ -121,4 +121,27 @@ describe('weekly run', () => {
     expect(await runRecommendations(freshShop, fresh, { trigger: 'on_demand', now: NOW, explain })).toMatchObject({ ok: true, status: 'insufficient_data', cards: 0 });
     expect(explainCalls).toBe(before);
   });
+
+  it('counts parallel and failed attempts toward the on-demand limit, and runs the weekly job once per week', async () => {
+    const other = await withUserContext(db, asUserId('race-owner'), (tx) => createShop(tx, { name: 'Race', category: null, isDemo: false }));
+    const otherShop = <T>(fn: Parameters<typeof withShopContext<T>>[2]) => withShopContext(db, { role: 'sa_app', shopId: other, userId: asUserId('race-owner') }, fn);
+    const failing = async (): Promise<never> => {
+      throw new Error('model down');
+    };
+    await expect(runRecommendations(otherShop, other, { trigger: 'on_demand', now: NOW, explain: failing })).resolves.toMatchObject({ ok: true });
+    const results = await Promise.all(Array.from({ length: 4 }, () => runRecommendations(otherShop, other, { trigger: 'on_demand', now: NOW, explain })));
+    expect(results.filter((r) => r.ok)).toHaveLength(ON_DEMAND_RUNS_PER_DAY - 1);
+    expect((await runRecommendations(otherShop, other, { trigger: 'weekly', now: NOW, explain })).ok).toBe(true);
+    expect(await runRecommendations(otherShop, other, { trigger: 'weekly', now: NOW, explain })).toEqual({ ok: false, error: 'already_ran' });
+  });
+
+  it('marks a run failed when the model step throws, and keeps showing the last good run', async () => {
+    const before = await inShop((tx) => latestRun(tx, shopId));
+    const failing = async (): Promise<never> => {
+      throw new Error('model down');
+    };
+    await expect(runRecommendations(inShop, shopId, { trigger: 'weekly', now: new Date('2026-11-12T03:00:00Z'), explain: failing })).rejects.toThrow('model down');
+    expect((await inShop((tx) => latestRun(tx, shopId)))?.id).toBe(before?.id);
+  });
 });
+

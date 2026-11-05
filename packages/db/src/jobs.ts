@@ -124,13 +124,8 @@ export async function runDueJobs(
   return summary;
 }
 
-/** Enqueues one job per shop; the dedupe key makes a repeated cron firing a no-op. */
-export async function enqueueForAllShops(db: Db, kind: string, dedupeKey: (shopId: ShopId) => string): Promise<number> {
-  const shopIds = await withContext(db, { role: 'sa_worker' }, async (tx) =>
+export async function listActiveShopIds(db: Db): Promise<ShopId[]> {
+  return withContext(db, { role: 'sa_worker' }, async (tx) =>
     rowsOf<{ id: string }>(await tx.execute(sql`select id from app_ctx.active_shop_ids() as id`)).map((r) => asShopId(r.id)),
   );
-  for (const shopId of shopIds) {
-    await withShopContext(db, { role: 'sa_worker', shopId }, (tx) => enqueueJob(tx, { kind, shopId, dedupeKey: dedupeKey(shopId) }));
-  }
-  return shopIds.length;
 }

@@ -92,9 +92,9 @@ Selection:
 `runRecommendations` in `apps/web/server/weekly-run.ts`:
 
 1. Takes the last finished ISO week.
-2. Loads the inputs in one shop-scoped transaction (`loadRuleInputs`): metrics up to that week, SKUs with their cost and **current** stock (as of the run date, not the week's end), 8 weeks of card history, learned stats, and competitor prices from the 14 days before the week's end.
+2. In one shop-scoped transaction, takes a per-shop advisory lock, checks the on-demand limit (or, for the weekly trigger, that this week hasn't run), reserves a `running` run row (`reserveRun`), and loads the inputs (`loadRuleInputs`): metrics up to that week, SKUs with their cost and **current** stock (as of the run date, not the week's end), 8 weeks of card history, learned stats, and competitor prices from the 14 days before the week's end.
 3. Calls `planRecommendations`, then the explain step with each card's template as fallback, **outside any transaction**.
-4. Stores the run and its cards with `saveRun`.
+4. Finishes the run and stores its cards with `finishRun`. If the explain step throws, the run is marked `failed` and still counts toward the limit.
 
 A new run expires the previous run's unanswered cards. `recommendation_run.notes` keeps what the UI needs to explain a quiet week: weeks of history, skipped-rule reasons (upload nudges), the missing-cost list and the prompt version.
 

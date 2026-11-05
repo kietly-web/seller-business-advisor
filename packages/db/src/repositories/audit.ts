@@ -13,6 +13,8 @@ export const AUDIT_ACTIONS = {
   'upload.aborted': { entity: 'upload', item: 'SA-205' },
   'cost.changed': { entity: 'unit_cost', item: 'SA-207' },
   'competitor.observed': { entity: 'competitor_observation', item: 'SA-408' },
+  'competitor.listing_added': { entity: 'competitor_listing', item: 'SA-408' },
+  'recommendation.rated': { entity: 'recommendation', item: 'SA-407' },
   'recommendation.accepted': { entity: 'recommendation', item: 'SA-407' },
   'recommendation.dismissed': { entity: 'recommendation', item: 'SA-407' },
   'recommendation.done': { entity: 'recommendation', item: 'SA-407' },

@@ -6,12 +6,13 @@ import { appendAudit } from './audit';
 import { rowsOf } from './rows';
 
 // The URL is stored for the seller's reference only; we never fetch it (no scraping)
-export async function addCompetitorListing(tx: Tx, input: { shopId: ShopId; skuId: string; url: string; label: string | null }): Promise<string> {
+export async function addCompetitorListing(tx: Tx, input: { shopId: ShopId; userId: string; skuId: string; url: string; label: string | null }): Promise<string> {
   const [row] = await tx
     .insert(competitorListing)
     .values({ shopId: input.shopId, skuId: input.skuId, url: input.url, label: input.label })
     .returning({ id: competitorListing.id });
   if (!row) throw new Error('Listing could not be saved');
+  await appendAudit(tx, { shopId: input.shopId, actor: input.userId, action: 'competitor.listing_added', entityId: row.id });
   return row.id;
 }
 
