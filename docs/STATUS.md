@@ -1,10 +1,10 @@
 # Project status
 
-Last updated: 05/11/2026 (Slice A) · Update this file in every slice PR (see `CLAUDE.md`, "How we work"). It is the hand-off note for any agent or person joining the work: read it after `CLAUDE.md` and before starting anything.
+Last updated: 05/11/2026 (Slice B) · Update this file in every slice PR (see `CLAUDE.md`, "How we work"). It is the hand-off note for any agent or person joining the work: read it after `CLAUDE.md` and before starting anything.
 
 ## Where we are
 
-**Milestone M1 (data, auth, consent) is complete** once Slice A merges. Next milestone: M2 ingestion.
+**Milestone M1 (data, auth, consent) is complete.** M2 (ingestion) is in progress: Slice B (parsers) is done, Slice C (upload flow) is next.
 
 | Area | State |
 | --- | --- |
@@ -13,19 +13,23 @@ Last updated: 05/11/2026 (Slice A) · Update this file in every slice PR (see `C
 | Auth: email + password, verification email, TOTP 2FA, breach check, DB rate limits, 14-day sessions (SA-105) | Done. Google sign-in deferred; no 2FA UI yet |
 | Slice A: sign-up with consents, sign-in, check-email, shop onboarding / demo shop, dashboard, consent settings, sign-out (SA-106, SA-107) | Done (PR for `SA-106-signup-onboarding-ui`) |
 | Audit action catalogue (SA-108), job runner + `/api/cron/drain` (SA-109), compliance docs (SA-110) | Done |
+| Slice B: parser registry, header normalisation, detection, PII allowlist + test, order-ID hashing, synthetic 12-month shop with export writers, `shopee.orders@v1`, `shopee.income@v1` (assumed), `seller.unit_costs@v1`, `seller.stock@v1` + CSV templates (SA-201–204) | Done (PR for `SA-201-parsers`). No real Seller Centre files yet, so both Shopee parsers stay `assumed` |
 | Process | Lean mode: slices, CI as gate, go-live checklist |
+
+Parsers (`packages/parsers`) work on a `string[][]` table: `detect` → `prepare` (mapping and removed columns, no values read) → seller confirms → `transform` (async, hashes order IDs). File reading (Papa Parse for CSV, SheetJS for XLSX) belongs to the upload worker in SA-206. The synthetic generator is a separate entry, `@sa/parsers/synthetic`, so it stays out of the browser bundle.
 
 Routes: `/` (landing), `/dang-ky`, `/kiem-tra-email`, `/dang-nhap`, `/dong-y` (consent gate), `/bat-dau`, `/tong-quan`, `/cai-dat`. Every signed-in page except `/dong-y` requires a recorded service consent (`requireConsentedUser`), because the sign-up hook writes consents after the user row commits. One owned shop per user for now. Sign-up and sign-in post from the browser to `/api/auth/*` because Better Auth applies rate limits only there, not to server-side `auth.api` calls. Consents travel in the sign-up body and are recorded by a Better Auth hook.
 
 ## Next
 
-**Slice B: parsers** (SA-201–204): parser registry, header normalisation and detection, PII allowlist and test, synthetic demo-shop generator with export writers, orders/income/cost/stock parsers with fixtures. Security review required (ingestion). Then Slice C (upload flow). Full slice list: `docs/design/08-delivery-plan.md`.
+**Slice C: upload flow** (SA-205, SA-206, SA-207, SA-209): ingest API with zod re-validation and the PII value scan, upload UI in a Web Worker, costs UI, demo-shop seeding from the synthetic generator. Security review required (ingestion). Open points for it: `ingest_stage.record_kind` has no `unit_cost` kind yet (unit costs may write straight to `unit_cost`), and SKU rows must be derived from order lines by `skuKey`. Full slice list: `docs/design/08-delivery-plan.md`.
 
 ## Open PRs
 
 | PR | What | Action |
 | --- | --- | --- |
 | #22 | Dependabot minor/patch group | Merge if CI is green |
+| (this slice) | Slice B parsers, `SA-201-parsers` | Auto-merge when CI is green |
 
 ## Waiting on the owner
 
@@ -56,4 +60,5 @@ Routes: `/` (landing), `/dang-ky`, `/kiem-tra-email`, `/dang-nhap`, `/dong-y` (c
 - **SEO is on** (owner's decision, 05/11/2026): public pages `/`, `/dang-ky`, `/dang-nhap` are indexable with `robots.txt` and `sitemap.xml`; signed-in pages carry `noindex` and are disallowed. Public pages render as signed-out when auth isn't configured (`getOptionalSessionUser`); signed-in pages still fail loudly.
 - `smoke.yml` checks the production domain whenever Vercel's commit status on `main` turns green (`/`, `/dang-ky`, `/robots.txt`, `/sitemap.xml` must return 200), and can be run by hand (workflow_dispatch). Vercel reports to GitHub through commit statuses, not GitHub Deployments, so `deployment_status` triggers never fire. CI's build passing doesn't prove pages render; this does.
 - Sign-up/sign-in can't work on Vercel yet: production auth env isn't set, and `BETTER_AUTH_URL` must match each deployment's origin (Better Auth's origin check), so previews need their own value.
+- Parser fixtures under `packages/parsers/fixtures/` are committed with `-text` (`.gitattributes`) so CRLF and BOM edge cases keep their bytes.
 - Project agent files added mid-session aren't available until a new session starts; use a general-purpose agent pointed at the agent file instead.
