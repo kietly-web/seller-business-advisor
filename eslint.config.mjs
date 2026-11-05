@@ -13,7 +13,7 @@ export default defineConfig(
   {
     // ADR-001: engine, parsers and shared must stay free of I/O and app-layer packages
     files: ['packages/{engine,parsers,shared}/src/**/*.ts'],
-    ignores: ['packages/parsers/src/node.ts'],
+    ignores: ['packages/parsers/src/node.ts', 'packages/*/src/**/*.test.ts'],
     rules: {
       'no-restricted-imports': [
         'error',

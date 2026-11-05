@@ -1,0 +1,10 @@
+﻿"Danh sách đơn hàng"
+Xuất ngày 01/10/2026
+
+"MÃ ĐƠN HÀNG","Ngày đặt hàng","Trạng thái đơn hàng","Tên sản phẩm","SKU phân loại hàng","Tên phân loại hàng","Giá gốc","Giá ưu đãi","Số lượng","Tên người nhận","Số điện thoại"
+FX0001,01/10/2026 09:30,Hoàn thành,Kệ gia vị xoay,HL-002-A,Trắng,"₫189.000","159.000 ₫",2,Nguyễn Văn Mẫu,0900000000
+FX0002,46297,Đã hủy,Thớt gỗ me tây,,Lớn,"120,000",99000,1,Nguyễn Văn Mẫu,0900000000
+FX0003,2026-10-02 23:15,Đang xử lý lạ,Đèn ngủ cảm ứng,HL-007-B,Xám,150000,150000,1,Nguyễn Văn Mẫu,0900000000
+FX0004,02/10/2026,Hoàn thành,Đèn ngủ cảm ứng,HL-007-B,Xám,150000,abc,1,Nguyễn Văn Mẫu,0900000000
+,,,,,,,,,,
+,,,,,,,,,,

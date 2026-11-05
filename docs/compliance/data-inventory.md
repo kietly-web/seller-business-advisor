@@ -29,7 +29,7 @@ Seller Advisor processes seller business data and seller account data only. Buye
 | LLM usage (tokens, latency, cost, validation result — no prompt or response bodies) | `app.llm_call` | C1 | No | P4 | 13 months |
 | Background jobs | `app.job` | C1 | No | P1 | Done jobs purged after 30 days (to implement with retention job) |
 
-Not held anywhere: buyer name, phone, email, address, username, notes or raw Shopee order ids (C3). Enforced by the parser allowlist (`docs/design/04-ingestion-parser.md`), a server-side PII value scan, and the `order_hash` format check in the database.
+Not held anywhere: buyer name, phone, email, address, username, notes or raw Shopee order ids (C3). Enforced by the parser allowlist (`docs/design/04-ingestion-parser.md`), a server-side PII value scan, and the `order_hash` format check in the database. `order_hash` itself is pseudonymised, not anonymised: we hold the per-shop salt and Shopee order IDs have low entropy, so it is treated as personal data (counsel to confirm the classification).
 
 ## Recipients and transfers
 

@@ -28,20 +28,23 @@ export interface ExportParser {
   id: `${string}@v${number}`;               // 'shopee.orders@v1'
   exportType: ExportType;                   // 'shopee.orders' | 'shopee.income' | ...
   status: 'assumed' | 'verified';           // 'verified' only after real samples pass
-  sheetHint?: RegExp;                       // XLSX sheet name match
   headerRowSearch: number;                  // scan first N rows for the header
-  columns: ColumnSpec[];                    // the allowlist
-  detect(headers: NormalisedHeader[]): number;  // 0..1 confidence
-  toCanonical(row: RawRow, ctx: ParseCtx): CanonicalRecord[] | RowError;
+  columns: ColumnSpec[];                    // the allowlist; detection scores against it
+  statusMap?: Record<string, OrderStatus>;  // normalised status text → status
+  // row holds only allowlisted, already-parsed cells (order IDs already hashed)
+  toCanonical(row: MappedRow, sourceRow: number, ctx: ParseCtx): CanonicalRecord[];
 }
 
 export interface ColumnSpec {
   key: string;                              // canonical field
   aliases: string[];                        // normalised header variants (vi + en)
-  required: boolean;
+  required: boolean;                        // column must exist for detection
+  blankAllowed?: boolean;                   // required column whose cells may be blank
   parse: 'text' | 'vnd' | 'int' | 'date' | 'datetime' | 'status' | 'order_id';
 }
 ```
+
+The pipeline is `detect(registry, table)` → `prepare(candidate, table)` (header row, mapping, removed columns; no cell values read) → seller confirms → `transform(prepared, table, { hashOrderId, today })`. Row issues carry a row number, a code and a column key, never a cell value.
 
 Rules:
 
@@ -82,17 +85,32 @@ The names and columns below come from memory of the Seller Centre UI and are **n
 | `quantity` | `so luong` | int | yes |
 | `seller_voucher` | `ma giam gia cua shop` | vnd | no |
 | `platform_voucher` | `ma giam gia cua shopee` | vnd | no |
-| `fixed_fee`, `service_fee`, `payment_fee` | `phi co dinh`, `phi dich vu`, `phi thanh toan` | vnd | no |
 
-Everything else is dropped, including recipient name, phone, address, province, buyer username, buyer note and tracking number. Province might be useful for regional insight later. It stays dropped until a privacy review approves it as non-identifying at province level.
+Fee columns in the orders export are dropped too: fees come only from the income export, so they are never counted twice. Everything else is dropped, including recipient name, phone, address, province, buyer username, buyer note and tracking number. Province might be useful for regional insight later. It stays dropped until a privacy review approves it as non-identifying at province level.
+
+### `shopee.income@v1` assumed allowlist
+
+| Canonical key | Example aliases (normalised) | Parse | Required |
+| --- | --- | --- | --- |
+| `order_id` → `order_hash` | `ma don hang` | order_id | yes |
+| `paid_on` → `incurred_on` | `ngay hoan thanh thanh toan`, `ngay thanh toan` | date | yes |
+| `fixed_fee` → `commission` | `phi co dinh` | vnd | yes (blank allowed) |
+| `service_fee` → `service` | `phi dich vu` | vnd | yes (blank allowed) |
+| `payment_fee` → `transaction` | `phi thanh toan` | vnd | yes (blank allowed) |
+| `shipping_fee_seller` → `shipping_seller` | `phi van chuyen nguoi ban tra` | vnd | no |
+| `affiliate_fee` → `affiliate` | `phi hoa hong tiep thi lien ket` | vnd | no |
+
+Each non-zero fee becomes one `fee_line` with the amount stored as a positive cost (the export is assumed to show deductions as negative).
 
 ### Unit-cost template (`seller.unit_costs@v1`, ours)
 
-Generated per shop from known SKUs, with a Vietnamese header row and an instruction row:
+Generated per shop from known SKUs as CSV: an instruction row, then a Vietnamese header row (`Mã SKU (không sửa)`, `Tên sản phẩm (không sửa)`, `Giá vốn (₫)`, `Bao bì (₫)`, `Áp dụng từ (dd/MM/yyyy)`). The snake-case names below are accepted as aliases. A blank `ap_dung_tu` means today. XLSX with locked cells follows when SheetJS lands with the upload worker.
 
 | `sku_key` (locked) | `ten_san_pham` (locked) | `gia_von` (₫) | `bao_bi` (₫) | `ap_dung_tu` (dd/MM/yyyy) |
 
-`sku_key` is our stable key (`platform_item_id:platform_model_id` or `seller_sku`). Blank costs are allowed: those SKUs are flagged and excluded from margin rankings (US-03).
+`sku_key` is our stable key: `sku:<seller_sku>`, or `name:<normalised item name>|<normalised variation>` when the export has no seller SKU (the orders export carries no platform item IDs). Blank costs are allowed: those SKUs are flagged (`COST_MISSING`) and excluded from margin rankings (US-03).
+
+`seller.stock@v1` uses the same layout: `sku_key`, `ten_san_pham`, `ton_kho` (required), `ngay` (as-of date, default today), `thoi_gian_nhap_hang` (lead time in days).
 
 ## Upload API
 
@@ -107,7 +125,7 @@ On every chunk the server re-validates with the same zod schema (`strict()`, so 
 
 ## Synthetic data and fixtures
 
-- `packages/parsers/synthetic/` generates a 12-month demo shop: ~180 SKUs in home and living, seasonality (Tết, 9.9, 11.11, 12.12 campaigns), a May 2026 fee change, realistic returns and cancellations, and some SKUs with no cost. It is seeded and deterministic.
+- `packages/parsers/src/synthetic/` (exported as `@sa/parsers/synthetic`, kept out of the browser bundle) generates a 12-month demo shop: ~180 SKUs in home and living, seasonality (Tết, 9.9, 11.11, 12.12 campaigns), a May 2026 fee change, realistic returns and cancellations, and some SKUs with no cost. It is seeded and deterministic.
 - The same generator writes **files in each assumed export format**, including fake buyer columns filled with obviously fake values (`Nguyễn Văn Mẫu`, `0900000000`). Tests prove those columns never survive.
 - `packages/parsers/fixtures/<parser_id>/` holds small hand-made edge-case files: title rows above the header, merged cells, Excel serial dates, `₫` in numbers, empty trailing rows, a Unicode NFD header, a 25 MB stress file (generated at test time, not committed).
 - Real samples from design partners go in `samples/` (git-ignored). A script anonymises them by dropping non-allowlisted columns and re-hashing IDs, then promotes them to fixtures. Only then does a parser move from `assumed` to `verified`.
