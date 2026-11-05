@@ -91,7 +91,6 @@ export interface Rule {
   baseConfidence: number;
   ease: number;
   cooldownWeeks: number;
-  checklistKey: string;
   needs?: readonly SkipReason[];
   evaluate(sku: SkuView, ctx: ShopView): Candidate | null;
 }

@@ -55,7 +55,7 @@ function make(rule: Rule, sku: SkuView, parts: Pick<Candidate, 'impactLowVnd' | 
     baseConfidence: rule.baseConfidence,
     ease: rule.ease,
     cooldownWeeks: rule.cooldownWeeks,
-    checklistKey: parts.actionType ? `${parts.actionType}.v${rule.version}` : rule.checklistKey,
+    checklistKey: `${parts.actionType ?? rule.actionType}.v${rule.version}`,
     facts: { sku_name: sku.label, ...parts.facts },
     evidence: parts.evidence ?? evidenceOf(sku),
   };
@@ -84,7 +84,6 @@ export const marginBelowTargetUnderpriced: Rule = {
   baseConfidence: 0.6,
   ease: 0.9,
   cooldownWeeks: 2,
-  checklistKey: 'raise_price.v1',
   needs: ['no_competitor_data'],
   evaluate(sku, shop) {
     const comp = shop.ctx.competitors?.get(sku.info.skuId);
@@ -123,7 +122,6 @@ export const negativeMargin: Rule = {
   baseConfidence: 0.7,
   ease: 0.8,
   cooldownWeeks: 2,
-  checklistKey: 'raise_price.v1',
   evaluate(sku) {
     const now = sku.current?.contributionMarginVnd;
     const before = sku.previous?.contributionMarginVnd;
@@ -155,7 +153,6 @@ export const stockoutRisk: Rule = {
   baseConfidence: 0.65,
   ease: 0.7,
   cooldownWeeks: 1,
-  checklistKey: 'restock.v1',
   needs: ['no_stock_data'],
   evaluate(sku) {
     const onHand = sku.info.onHand;
@@ -193,7 +190,6 @@ export const deadStock: Rule = {
   baseConfidence: 0.5,
   ease: 0.6,
   cooldownWeeks: 4,
-  checklistKey: 'clearance.v1',
   needs: ['no_stock_data'],
   evaluate(sku, shop) {
     const { onHand, unitCostVnd, firstOrderOn } = sku.info;
@@ -219,7 +215,6 @@ export const priceAboveMarketLowConversion: Rule = {
   baseConfidence: 0.45,
   ease: 0.9,
   cooldownWeeks: 2,
-  checklistKey: 'lower_price.v1',
   needs: ['no_traffic_data', 'no_competitor_data'],
   evaluate(sku, shop) {
     const comp = shop.ctx.competitors?.get(sku.info.skuId);
@@ -259,7 +254,6 @@ export const highViewsLowConversion: Rule = {
   baseConfidence: 0.35,
   ease: 0.5,
   cooldownWeeks: 4,
-  checklistKey: 'improve_listing.v1',
   needs: ['no_traffic_data', 'no_competitor_data'],
   evaluate(sku, shop) {
     const comp = shop.ctx.competitors?.get(sku.info.skuId);
@@ -296,7 +290,6 @@ export const campaignUnprofitable: Rule = {
   baseConfidence: 0.55,
   ease: 0.9,
   cooldownWeeks: 4,
-  checklistKey: 'skip_campaign.v1',
   needs: ['no_campaign'],
   evaluate(sku, shop) {
     const week = shop.campaignWeek;
