@@ -12,6 +12,7 @@ The LLM phrases recommendation cards in Vietnamese and will later power a constr
 - Default model `claude-opus-5-5` at low effort for explanations. `claude-haiku-5-5` is the documented R7 cost fallback, adopted only if the golden set and a human review show equal quality.
 - Use structured outputs for the explain call and strict tool schemas for chat query selection.
 - Model IDs live in env config.
+- Explain calls opt into server-side refusal fallback (`fallbacks: "default"`): if a safety classifier declines a harmless request, Anthropic reruns it on its recommended fallback model (currently Claude Opus 4.8 or Claude Opus 5, depending on the refusal category). The model that answered is recorded in `llm_call.model`. Output from a fallback model goes through the same validation and template fallback. (Updated 05/11/2026, Slice F.)
 
 ## Consequences
 

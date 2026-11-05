@@ -10,6 +10,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@sa/shared": "workspace:*"
+    "@anthropic-ai/sdk": "1.3.0",
+    "@sa/shared": "workspace:*",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@sa/engine": "workspace:*"
   }
 }

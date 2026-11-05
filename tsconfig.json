@@ -4,5 +4,5 @@
     "types": ["node"],
     "lib": ["ES2023", "DOM"]
   },
-  "include": ["tests", "*.config.ts", "*.config.mjs", "packages/parsers/src/**/*.test.ts", "packages/engine/src/**/*.test.ts"]
+  "include": ["tests", "*.config.ts", "*.config.mjs", "packages/parsers/src/**/*.test.ts", "packages/engine/src/**/*.test.ts", "packages/llm/src/**/*.test.ts"]
 }
