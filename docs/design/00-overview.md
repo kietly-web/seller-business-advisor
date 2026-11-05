@@ -40,6 +40,7 @@ The MVP is one Next.js app on Vercel (Singapore) with one Neon Postgres database
 | [ADR-006](../adr/ADR-006-drizzle-orm-rls.md) | Drizzle ORM + SQL-defined RLS with per-transaction session context |
 | [ADR-007](../adr/ADR-007-better-auth.md) | Better Auth, self-hosted in our database |
 | [ADR-008](../adr/ADR-008-postgres-job-queue.md) | Postgres-backed job queue drained by Vercel Cron, with no queue vendor |
+| [ADR-009](../adr/ADR-009-ses-email-and-hibp.md) | Amazon SES Singapore for email; Have I Been Pwned range check for passwords |
 
 ## Out of scope for this pack
 
