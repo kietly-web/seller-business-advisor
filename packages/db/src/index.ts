@@ -9,3 +9,5 @@ export * from './repositories/ingest';
 export * from './repositories/costs';
 export * from './repositories/metrics';
 export * from './repositories/llm';
+export * from './repositories/runs';
+export * from './repositories/competitors';

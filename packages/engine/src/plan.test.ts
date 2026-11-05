@@ -57,3 +57,12 @@ describe('demo shop end to end', () => {
     }
   });
 });
+
+describe('competitorMedian', () => {
+  it('needs two listings and takes the middle price', async () => {
+    const { competitorMedian } = await import('./competitors');
+    expect(competitorMedian([100n])).toBeNull();
+    expect(competitorMedian([120n, 100n])).toEqual({ medianVnd: 110n, listings: 2 });
+    expect(competitorMedian([300n, 100n, 120n])).toEqual({ medianVnd: 120n, listings: 3 });
+  });
+});
