@@ -53,6 +53,11 @@ function stateError(error: unknown): IngestResult<never> {
   throw error;
 }
 
+function safeFileName(input: string): string {
+  const base = input.replace(/^.*[\\/]/, '');
+  return looksLikePii(base) ? `file${/\.[a-z0-9]{1,5}$/i.exec(base)?.[0] ?? ''}` : base;
+}
+
 export async function startUpload(db: Db, who: Who, input: unknown): Promise<IngestResult<{ uploadId: string; salt: string }>> {
   const parsed = startSchema.safeParse(input);
   const parser = parsed.success ? parserById(parsed.data.parserId as ParserId) : undefined;
@@ -71,7 +76,7 @@ export async function startUpload(db: Db, who: Who, input: unknown): Promise<Ing
         exportType: parser.exportType,
         parserId: parser.id,
         fileSha256: data.fileSha256,
-        fileName: data.fileName.replace(/^.*[\\/]/, ''),
+        fileName: safeFileName(data.fileName),
         removedColumns: data.removedColumns,
       }),
     );
@@ -139,7 +144,10 @@ export async function finishUpload(
 export async function cancelUpload(db: Db, who: Who, uploadIdInput: unknown): Promise<void> {
   const uploadId = uploadIdSchema.safeParse(uploadIdInput);
   if (uploadId.success) {
-    await inShop(db, who, (tx) => abortUpload(tx, who.shopId, asUploadId(uploadId.data)));
+    await inShop(db, who, async (tx) => {
+      await abortUpload(tx, who.shopId, asUploadId(uploadId.data));
+      await appendAudit(tx, { shopId: who.shopId, actor: who.userId, action: 'upload.aborted', entityId: uploadId.data });
+    });
   }
 }
 

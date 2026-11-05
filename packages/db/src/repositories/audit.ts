@@ -10,6 +10,7 @@ export const AUDIT_ACTIONS = {
   'upload.created': { entity: 'upload', item: 'SA-205' },
   'upload.completed': { entity: 'upload', item: 'SA-205' },
   'upload.rejected_pii': { entity: 'upload', item: 'SA-205' },
+  'upload.aborted': { entity: 'upload', item: 'SA-205' },
   'cost.changed': { entity: 'unit_cost', item: 'SA-207' },
   'competitor.observed': { entity: 'competitor_observation', item: 'SA-408' },
   'recommendation.accepted': { entity: 'recommendation', item: 'SA-407' },

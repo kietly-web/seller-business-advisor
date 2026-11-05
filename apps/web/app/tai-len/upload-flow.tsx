@@ -1,6 +1,6 @@
 'use client';
 
-import { MAX_CHUNK_RECORDS } from '@sa/parsers';
+import { chunkRecords } from '@sa/parsers';
 import { formatDate, asIsoDate } from '@sa/shared';
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
@@ -95,12 +95,13 @@ export function UploadFlow({ today }: { today: string }) {
       if (reply.type !== 'transformed') return setStep({ kind: 'error', key: 'read' });
       const { records, issues } = reply;
       setStep({ kind: 'sending', done: 0, total: records.length });
-      for (let i = 0; i < records.length; i += MAX_CHUNK_RECORDS) {
-        const chunk = records.slice(i, i + MAX_CHUNK_RECORDS);
+      let sentCount = 0;
+      for (const chunk of chunkRecords(records)) {
         const id = uploadId;
         const sent = await withRetry(() => sendChunkAction(id, chunk));
         if (!sent.ok) return setStep({ kind: 'error', key: sent.error });
-        setStep({ kind: 'sending', done: Math.min(i + chunk.length, records.length), total: records.length });
+        sentCount += chunk.length;
+        setStep({ kind: 'sending', done: sentCount, total: records.length });
       }
       const id = uploadId;
       const done = await withRetry(() => finishUploadAction(id, { expectedRecords: records.length, issues }));

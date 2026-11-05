@@ -109,11 +109,18 @@ describe('ingest', () => {
     expect(await count('fee_line')).toBe(2);
   });
 
+  it('does not supersede a larger upload with a smaller, possibly filtered one', async () => {
+    await ingest('shopee.orders', 'full', [line(2, HASH_A, 'sku:A', 1000), line(3, HASH_B, 'sku:A', 1000)]);
+    const { result } = await ingest('shopee.orders', 'filtered', [line(2, HASH_A, 'sku:A', 2000)]);
+    expect(result.superseded).toBe(0);
+    expect(await count('order_line')).toBe(2);
+  });
+
   it('supersedes an older upload covering the same period', async () => {
     await ingest('shopee.orders', 'o1', [line(2, HASH_A, 'sku:A', 1000), line(3, HASH_B, 'sku:A', 1000)]);
-    const { result } = await ingest('shopee.orders', 'o2', [line(2, HASH_A, 'sku:A', 2000)]);
+    const { result } = await ingest('shopee.orders', 'o2', [line(2, HASH_A, 'sku:A', 2000), line(3, HASH_A, 'sku:B', 500)]);
     expect(result.superseded).toBe(1);
-    expect(await count('order_line')).toBe(1);
+    expect(await count('order_line')).toBe(2);
     const statuses = await inShop((tx) => listUploads(tx, shopId));
     expect(statuses.map((u) => u.status)).toEqual(['parsed', 'superseded']);
     expect(statuses[0]?.removedPiiColumns).toBe(1);

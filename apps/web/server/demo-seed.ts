@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import type { Db } from '@sa/db';
-import { createOrderHasher, detect, MAX_CHUNK_RECORDS, prepare, REGISTRY, toWire, transform, writeCsv, type Table } from '@sa/parsers';
+import { chunkRecords, createOrderHasher, detect, prepare, REGISTRY, toWire, transform, writeCsv, type Table } from '@sa/parsers';
 import { generateShop, incomeExport, ordersExport, stockFile, unitCostsFile } from '@sa/parsers/synthetic';
 import { addDays, type IsoDate, type ShopId } from '@sa/shared';
 import { finishUpload, sendChunk, startUpload } from './ingest';
@@ -38,8 +38,8 @@ async function ingestTable(db: Db, who: { userId: string; shopId: ShopId }, file
     hashOrderId: createOrderHasher(Buffer.from(started.salt, 'base64')),
     today,
   });
-  for (let i = 0; i < records.length; i += MAX_CHUNK_RECORDS) {
-    const sent = await sendChunk(db, who, started.uploadId, records.slice(i, i + MAX_CHUNK_RECORDS).map(toWire));
+  for (const chunk of chunkRecords(records.map(toWire))) {
+    const sent = await sendChunk(db, who, started.uploadId, chunk);
     if (!sent.ok) {
       throw new Error(`Demo chunk for ${fileName} failed: ${sent.error}`);
     }

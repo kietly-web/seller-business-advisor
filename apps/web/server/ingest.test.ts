@@ -61,6 +61,12 @@ describe('ingest service', () => {
       listUploads(tx, who.shopId),
     );
     expect(upload?.fileName).toBe('don-hang.csv');
+    const named = await startUpload(db, who, start({ fileSha256: 'e'.repeat(64), fileName: 'don-0912345678.xlsx' }));
+    expect(named.ok).toBe(true);
+    const [latest] = await withShopContext(db, { role: 'sa_app', shopId: who.shopId, userId: asUserId(who.userId) }, (tx) =>
+      listUploads(tx, who.shopId),
+    );
+    expect(latest?.fileName).toBe('file.xlsx');
   });
 
   it('rejects malformed input, unknown parsers and PII-looking header names', async () => {
@@ -74,11 +80,11 @@ describe('ingest service', () => {
     expect(await sendChunk(db, who, 'not-a-uuid', [])).toEqual({ ok: false, error: 'invalid' });
   });
 
-  it('aborts the upload and audits it when a chunk carries a phone number', async () => {
+  it('aborts the upload and audits it when a chunk carries an email address', async () => {
     const who = await newShop('svc-3');
     const started = await startUpload(db, who, start({ parserId: 'seller.stock@v1' }));
     if (!started.ok) throw new Error(started.error);
-    const bad = { kind: 'stock', sourceRow: 2, skuKey: 'sku:0900000000', asOf: '2026-11-01', onHand: 1, leadTimeDays: null };
+    const bad = { kind: 'stock', sourceRow: 2, skuKey: 'sku:nguoimua@example.com', asOf: '2026-11-01', onHand: 1, leadTimeDays: null };
     expect(await sendChunk(db, who, started.uploadId, [bad])).toEqual({ ok: false, error: 'pii_suspected' });
     expect(await sendChunk(db, who, started.uploadId, [{ ...bad, skuKey: 'sku:A' }])).toEqual({ ok: false, error: 'state' });
     const audit = await queryAs(who, "select action from app.audit_log where action = 'upload.rejected_pii'");

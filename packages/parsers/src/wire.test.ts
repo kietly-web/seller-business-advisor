@@ -4,7 +4,7 @@ import { REGISTRY } from './index';
 import { detect } from './detect';
 import { prepare, transform } from './pipeline';
 import { generateShop, ordersExport, incomeExport } from './synthetic';
-import { fromWire, looksLikePii, toWire } from './wire';
+import { chunkRecords, fromWire, looksLikePii, MAX_CHUNK_BYTES, recordHasPii, toWire, type WireRecord } from './wire';
 import { asIsoDate } from '@sa/shared';
 
 describe('wire format', () => {
@@ -43,5 +43,22 @@ describe('PII value scan', () => {
 
   it.each(['Kệ gia vị 3 tầng', 'sku:HL-001-A', '8412345678901', 'Tivi 32" Sony', '2026-10-01T02:30:00.000Z'])('allows %s', (v) => {
     expect(looksLikePii(v)).toBe(false);
+  });
+});
+
+describe('record PII scan and chunking', () => {
+  const stock = { kind: 'stock', sourceRow: 2, skuKey: 'sku:0912345678', asOf: '2026-01-01', onHand: 1, leadTimeDays: null } as const;
+
+  it('allows 10-digit seller SKU codes but not phone numbers in names or emails anywhere', () => {
+    expect(fromWire([stock]).some(recordHasPii)).toBe(false);
+    expect(fromWire([{ ...stock, skuKey: 'sku:lan@example.com' }]).some(recordHasPii)).toBe(true);
+  });
+
+  it('splits chunks by bytes as well as count', () => {
+    const long = { ...stock, skuKey: `name:${'đ'.repeat(290)}` } as WireRecord;
+    const chunks = chunkRecords(Array.from({ length: 1500 }, () => long));
+    expect(chunks.flat()).toHaveLength(1500);
+    for (const c of chunks) expect(new TextEncoder().encode(JSON.stringify(c)).length).toBeLessThanOrEqual(MAX_CHUNK_BYTES);
+    expect(chunkRecords(Array.from({ length: 2500 }, () => stock as WireRecord)).map((c) => c.length)).toEqual([1000, 1000, 500]);
   });
 });

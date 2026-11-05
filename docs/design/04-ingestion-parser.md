@@ -119,13 +119,13 @@ The browser calls four Next.js server actions (`apps/web/app/tai-len/actions.ts`
 | Action | Purpose | Limits |
 | --- | --- | --- |
 | `startUpload` | Create the upload (`parser_id`, `file_sha256`, `file_name`, `removed_columns`). Returns `upload_id` + `salt` (base64) | 1 active upload per shop: starting a new one fails any unfinished one. A duplicate `file_sha256` of a parsed upload → `duplicate`. Removed-column names are length-capped and PII-scanned too |
-| `sendChunk` | `(upload_id, records)` | ≤ 1,000 records (`MAX_CHUNK_RECORDS`); every record must be the upload's kind; idempotent, because the stage key is `(kind, source_row, seq)` with `seq` = fee type for income rows |
-| `finishUpload` | `(upload_id, { expectedRecords, issues })`: merge, mark `parsed`, supersede older uploads fully inside the new period | Staged count must equal `expectedRecords`; ≤ 200,000 staged records per upload |
+| `sendChunk` | `(upload_id, records)` | ≤ 1,000 records and ≤ 800 KB (`chunkRecords`); every record must be the upload's kind; idempotent, because the stage key is `(kind, source_row, seq)` with `seq` = fee type for income rows |
+| `finishUpload` | `(upload_id, { expectedRecords, issues })`: merge, mark `parsed`, supersede older uploads fully inside the new period that have no more rows (a smaller file may be a filtered export) | Staged count must equal `expectedRecords`; ≤ 200,000 staged records per upload |
 | `cancelUpload` | Abort | — |
 
 Merge rules: SKUs are upserted by `sku_key`. Order lines are upserted by `(order_hash, sku)`, summing lines for the same order and SKU. An income file replaces every fee of the orders it lists. Unit costs and stock rows only apply to known `sku_key`s; the rest are counted as `UNKNOWN_SKU` in `upload.warnings`. Chunks go one at a time with retries; resuming after a reload (IndexedDB) is not built yet.
 
-On every chunk the server re-validates with the same zod schema (`packages/parsers/src/wire.ts`, strict objects, so unknown keys are rejected). As a final net it scans the text fields (`skuKey`, `itemName`, `variation`, `sellerSku`) for phone-number and email patterns. A hit rejects the chunk with `PII_SUSPECTED`, aborts the upload, writes an `upload.rejected_pii` audit row, logs the event (without the value), and the UI tells the seller to contact support. That situation means a parser bug, and it must be impossible in normal use.
+On every chunk the server re-validates with the same zod schema (`packages/parsers/src/wire.ts`, strict objects, so unknown keys are rejected). As a final net it scans product names (`itemName`, `variation`) for phone numbers and emails, and SKU codes (`skuKey`, `sellerSku`) for emails only, since 10-digit SKU codes look like phone numbers. File names are scanned too and replaced with a generic name on a hit A hit rejects the chunk with `PII_SUSPECTED`, aborts the upload, writes an `upload.rejected_pii` audit row, logs the event (without the value), and the UI tells the seller to contact support. That situation means a parser bug, and it must be impossible in normal use.
 
 ## Synthetic data and fixtures
 

@@ -23,7 +23,11 @@ Routes: `/` (landing), `/dang-ky`, `/kiem-tra-email`, `/dang-nhap`, `/dong-y` (c
 
 ## Next
 
-**Slice D: profit** (SA-301–304, `docs/design/08-delivery-plan.md`): weekly per-SKU metrics in `packages/engine` (fee allocation that reconciles with the income export, missing-cost exclusion), the recompute job after `finishUpload`, and the profit screen with drill-down to source rows. The demo shop already has 12 months of data to build against. Notes for it: `upload.warnings` holds `UNKNOWN_SKU` and row-issue counts; order lines are keyed by `sku_key`; SKUs without a cost have no `unit_cost` row.
+**Slice D: profit** (SA-301–304, `docs/design/08-delivery-plan.md`): weekly per-SKU metrics in `packages/engine` (fee allocation that reconciles with the income export, missing-cost exclusion), the recompute job after `finishUpload`, and the profit screen with drill-down to source rows. The demo shop already has 12 months of data to build against. Known gaps from the Slice C review, not yet fixed:
+- If demo seeding fails or times out, the demo shop stays empty and isn't reseeded.
+- Very large order+SKU groups could overflow the merge's `int` sum, which rolls back the merge safely.
+
+Notes for it: `upload.warnings` holds `UNKNOWN_SKU` and row-issue counts; order lines are keyed by `sku_key`; SKUs without a cost have no `unit_cost` row.
 
 ## Open PRs
 

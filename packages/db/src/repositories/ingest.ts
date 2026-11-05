@@ -255,6 +255,8 @@ export async function completeUpload(
           eq(upload.exportType, exportType),
           eq(upload.status, 'parsed'),
           sql`${upload.periodFrom} >= ${summary.period_from}::date and ${upload.periodTo} <= ${summary.period_to}::date`,
+          // A smaller file over the same period may be a filtered export (e.g. completed orders only)
+          sql`coalesce(${upload.rowCount}, 0) <= ${summary.rows}`,
         ),
       )
       .returning({ id: upload.id });

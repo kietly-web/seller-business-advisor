@@ -3,6 +3,28 @@ import { z } from 'zod';
 import type { CanonicalRecord } from './types';
 
 export const MAX_CHUNK_RECORDS = 1000;
+// Next.js server actions reject bodies over 1 MB; long Vietnamese names can make 1,000 records exceed it
+export const MAX_CHUNK_BYTES = 800_000;
+
+const encoder = new TextEncoder();
+
+export function chunkRecords(records: readonly WireRecord[]): WireRecord[][] {
+  const chunks: WireRecord[][] = [];
+  let current: WireRecord[] = [];
+  let bytes = 2;
+  for (const record of records) {
+    const size = encoder.encode(JSON.stringify(record)).length + 1;
+    if (current.length > 0 && (current.length >= MAX_CHUNK_RECORDS || bytes + size > MAX_CHUNK_BYTES)) {
+      chunks.push(current);
+      current = [];
+      bytes = 2;
+    }
+    current.push(record);
+    bytes += size;
+  }
+  if (current.length > 0) chunks.push(current);
+  return chunks;
+}
 
 const money = z.string().regex(/^-?\d{1,15}$/).transform((v) => BigInt(v));
 const nonNegMoney = z.string().regex(/^\d{1,15}$/).transform((v) => BigInt(v));
@@ -87,11 +109,14 @@ export function looksLikePii(value: string): boolean {
   return PHONE.test(value) || EMAIL.test(value);
 }
 
-const TEXT_FIELDS = ['skuKey', 'itemName', 'variation', 'sellerSku'] as const;
+const NAME_FIELDS = ['itemName', 'variation'] as const;
+// Seller SKU codes are often 10 digits starting with 0, so codes get the email check only
+const CODE_FIELDS = ['skuKey', 'sellerSku'] as const;
 
 export function recordHasPii(record: CanonicalRecord): boolean {
-  return TEXT_FIELDS.some((f) => {
-    const v = (record as unknown as Record<string, unknown>)[f];
-    return typeof v === 'string' && looksLikePii(v);
-  });
+  const field = (f: string) => (record as unknown as Record<string, unknown>)[f];
+  return (
+    NAME_FIELDS.some((f) => { const v = field(f); return typeof v === 'string' && looksLikePii(v); }) ||
+    CODE_FIELDS.some((f) => { const v = field(f); return typeof v === 'string' && EMAIL.test(v); })
+  );
 }
