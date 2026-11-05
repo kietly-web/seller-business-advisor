@@ -7,6 +7,8 @@ import type { CanonicalRecord, CellValue, ColumnSpec, ExportParser, RowIssue } f
 import { parseDateCell, parseDateTimeCell, parseIntCell, parseVndCell } from './values';
 
 const UNMAPPED_WARNING_BELOW = 0.95;
+const MAX_REPORTED_COLUMNS = 200;
+const MAX_HEADER_LENGTH = 100;
 
 export interface RemovedColumn {
   name: string;
@@ -31,7 +33,8 @@ export function prepare(candidate: Candidate, table: readonly (readonly string[]
   const removedColumns = headers
     .map((name, index) => ({ name: name.trim(), index }))
     .filter((h) => h.name !== '' && !mappedIdx.has(h.index))
-    .map((h) => ({ name: h.name, pii: isPiiHeader(h.name) }));
+    .slice(0, MAX_REPORTED_COLUMNS)
+    .map((h) => ({ name: h.name.slice(0, MAX_HEADER_LENGTH), pii: isPiiHeader(h.name) }));
   return {
     parser,
     score,
@@ -60,6 +63,7 @@ export async function transform(
   const issues: RowIssue[] = [];
   const ctx = { today: opts.today, warn: (issue: RowIssue) => issues.push(issue) };
   let rowCount = 0;
+  const width = (table[prepared.headerRow] ?? []).length;
 
   for (let r = prepared.headerRow + 1; r < table.length; r++) {
     const cells = table[r] ?? [];
@@ -68,6 +72,10 @@ export async function transform(
     }
     rowCount++;
     const sourceRow = r + 1;
+    if (cells.slice(width).some((c) => c.trim() !== '')) {
+      issues.push({ sourceRow, code: 'COLUMN_COUNT' });
+      continue;
+    }
     const row: Record<string, CellValue> = {};
     let ok = true;
     for (const { index, spec } of matches) {

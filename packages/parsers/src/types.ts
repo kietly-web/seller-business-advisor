@@ -77,7 +77,7 @@ export type MappedRow = Readonly<Record<string, CellValue>>;
 
 export interface RowIssue {
   sourceRow: number;
-  code: 'REQUIRED_MISSING' | 'INVALID_VALUE' | 'UNKNOWN_STATUS' | 'COST_MISSING';
+  code: 'REQUIRED_MISSING' | 'INVALID_VALUE' | 'COLUMN_COUNT' | 'UNKNOWN_STATUS' | 'COST_MISSING';
   column?: string;
 }
 

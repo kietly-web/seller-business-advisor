@@ -22,7 +22,7 @@ Routes: `/` (landing), `/dang-ky`, `/kiem-tra-email`, `/dang-nhap`, `/dong-y` (c
 
 ## Next
 
-**Slice C: upload flow** (SA-205, SA-206, SA-207, SA-209): ingest API with zod re-validation and the PII value scan, upload UI in a Web Worker, costs UI, demo-shop seeding from the synthetic generator. Security review required (ingestion). Open points for it: `ingest_stage.record_kind` has no `unit_cost` kind yet (unit costs may write straight to `unit_cost`), and SKU rows must be derived from order lines by `skuKey`. Full slice list: `docs/design/08-delivery-plan.md`.
+**Slice C: upload flow** (SA-205, SA-206, SA-207, SA-209): ingest API with zod re-validation and the PII value scan, upload UI in a Web Worker, costs UI, demo-shop seeding from the synthetic generator. Security review required (ingestion). Open points for it: `ingest_stage.record_kind` has no `unit_cost` kind yet (unit costs may write straight to `unit_cost`), SKU rows must be derived from order lines by `skuKey`, and the server must zod-validate and PII-scan `removed_columns` names too (they come from the file). Order hashes are pseudonymous, not anonymous: the server holds the salt and Shopee IDs have low entropy, so the data inventory treats them as personal data until counsel says otherwise. Full slice list: `docs/design/08-delivery-plan.md`.
 
 ## Open PRs
 

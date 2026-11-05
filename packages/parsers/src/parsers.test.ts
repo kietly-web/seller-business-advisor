@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { readCsv, type Table } from './csv';
 import { detect } from './detect';
 import { createOrderHasher } from './hash';
-import { REGISTRY, sellerUnitCostsV1, shopeeOrdersV1 } from './index';
+import { REGISTRY, sellerUnitCostsV1, shopeeOrdersV1, unitCostTemplate } from './index';
 import { prepare, transform } from './pipeline';
 import { FAKE_BUYER, generateShop, incomeExport, ordersExport, stockFile, unitCostsFile } from './synthetic';
 import type { CanonicalRecord, OrderLineRecord } from './types';
@@ -104,6 +104,21 @@ describe('shopee.orders@v1 edge-case fixture', () => {
       { sourceRow: 8, code: 'INVALID_VALUE', column: 'deal_price' },
     ]);
     expect(serialise(issues)).not.toContain('abc');
+  });
+});
+
+describe('row guards', () => {
+  it('rejects a row wider than the header instead of shifting values into mapped columns', async () => {
+    const table = [['sku_key', 'gia_von'], ['sku:A', '1000', 'Nguyễn Văn Mẫu'], ['sku:B', '2000']];
+    const { records, issues } = await parse(table);
+    expect(records).toHaveLength(1);
+    expect(issues).toEqual([{ sourceRow: 2, code: 'COLUMN_COUNT' }]);
+  });
+
+  it('templates escape formula-like names and refuse unknown key shapes', () => {
+    const t = unitCostTemplate([{ skuKey: 'sku:A', name: '=HYPERLINK("x")' }]);
+    expect(t[2]).toEqual(['sku:A', `'=HYPERLINK("x")`, '', '', '']);
+    expect(() => unitCostTemplate([{ skuKey: '=1', name: 'x' }])).toThrow();
   });
 });
 

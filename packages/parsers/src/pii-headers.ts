@@ -18,6 +18,7 @@ export const PII_HEADERS: readonly string[] = [
   'Tỉnh/Thành phố',
   'Email',
   'Ghi chú từ người mua',
+  'Ghi chú',
   'Nhận xét từ người mua',
   'Mã vận đơn',
   'Recipient name',

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { readCsv, writeCsv } from './csv';
+import { readCsv, textCell, writeCsv } from './csv';
 import { createOrderHasher } from './hash';
 import { REGISTRY } from './index';
 import { normaliseHeader } from './normalise';
@@ -84,6 +84,18 @@ describe('cell values', () => {
 });
 
 describe('csv', () => {
+  it('treats a quote inside an unquoted cell as text, so later rows stay in their columns', () => {
+    expect(readCsv('A1,Tivi 32" Sony,Mẫu\nA2,Quạt,Mẫu B\n')).toEqual([
+      ['A1', 'Tivi 32" Sony', 'Mẫu'],
+      ['A2', 'Quạt', 'Mẫu B'],
+    ]);
+  });
+
+  it.each(['=HYPERLINK("x")', '+1', '-1', '@SUM(1)', '\tx'])('escapes formula start %s', (v) => {
+    expect(textCell(v)).toBe(`'${v}`);
+  });
+
+
   it('round-trips quotes, commas and newlines and drops the BOM', () => {
     const table = [['a', 'b,c', 'say "hi"'], ['line\nbreak', '', 'đ']];
     expect(readCsv(`﻿${writeCsv(table)}`)).toEqual(table);

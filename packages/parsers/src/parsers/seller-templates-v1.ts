@@ -1,5 +1,5 @@
 import { formatDate, type IsoDate } from '@sa/shared';
-import type { Table } from '../csv';
+import { textCell, type Table } from '../csv';
 import { date, int, text, vnd } from '../row';
 import type { ExportParser } from '../types';
 
@@ -92,7 +92,7 @@ export function unitCostTemplate(skus: readonly TemplateSku[], current: Readonly
     [...UNIT_COST_HEADERS],
     ...skus.map((s) => {
       const c = current.get(s.skuKey);
-      return [s.skuKey, s.name, c ? String(c.cogsVnd) : '', c ? String(c.packagingVnd) : '', c ? formatDate(c.effectiveFrom) : ''];
+      return [templateKey(s.skuKey), textCell(s.name), c ? String(c.cogsVnd) : '', c ? String(c.packagingVnd) : '', c ? formatDate(c.effectiveFrom) : ''];
     }),
   ];
 }
@@ -101,6 +101,13 @@ export function stockTemplate(skus: readonly TemplateSku[]): Table {
   return [
     ['Nhập số tồn kho hiện tại cho từng sản phẩm. Không sửa hai cột đầu.'],
     [...STOCK_HEADERS],
-    ...skus.map((s) => [s.skuKey, s.name, '', '', '']),
+    ...skus.map((s) => [templateKey(s.skuKey), textCell(s.name), '', '', '']),
   ];
+}
+
+function templateKey(skuKey: string): string {
+  if (!/^(sku|name):/.test(skuKey)) {
+    throw new TypeError('SKU keys must start with sku: or name:');
+  }
+  return skuKey;
 }
