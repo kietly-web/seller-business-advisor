@@ -49,6 +49,7 @@ describe('payload', () => {
 
   it('rejects anything outside the schema', () => {
     expect(() => buildExplainPayload(input([card({ facts: { margin: '1' } })]))).toThrow();
+    expect(() => buildExplainPayload(input([card({ facts: { ...card().facts, shop_name: 'Shop của Lan' } })]))).toThrow();
     expect(() => buildExplainPayload({ ...input(), category: 'Shop của Lan' })).toThrow();
     expect(() => buildExplainPayload(input([card({ ref: 'shop-123' })]))).toThrow();
   });
@@ -61,7 +62,15 @@ describe('card validation', () => {
     ['unknown placeholder', { body: 'Lãi {{profit}}' }, 'unknown_placeholder'],
     ['malformed placeholder', { body: 'Lãi {{ margin_this_week }} tuần này' }, 'unknown_placeholder'],
     ['invented number', { body: 'Có thể lãi thêm 500.000 ₫ mỗi tháng nếu bạn làm ngay.' }, 'stray_digit'],
-    ['percent sign', { why_now: 'Lãi giảm mạnh, tới mức % đáng lo.' }, 'banned_phrase'],
+    ['percent sign', { why_now: 'Lãi giảm mạnh, tới mức % đáng lo.' }, 'stray_digit'],
+    ['full-width digits', { body: 'Có thể lãi thêm ５００.０００ ₫ mỗi tháng (ước tính).' }, 'stray_digit'],
+    ['arabic-indic digit', { body: 'Có thể lãi thêm ٣ triệu mỗi tháng.' }, 'stray_digit'],
+    ['full-width percent', { why_now: 'Biên lãi chỉ còn một ít ％ so với mục tiêu.' }, 'stray_digit'],
+    ['number words', { body: 'Có thể lãi thêm năm triệu đồng mỗi tháng nếu bạn làm.' }, 'stray_digit'],
+    ['rate is not a number word', { why_now: 'Tỷ lệ mua của {{sku_name}} đang thấp hơn cả shop.' }, null],
+    ['billion is', { body: 'Có thể lãi thêm một tỷ đồng mỗi tháng (ước tính).' }, 'stray_digit'],
+    ['halving claim', { why_now: 'Giảm một nửa khoản lỗ ngay trong tháng này.' }, 'stray_digit'],
+    ['decomposed promise', { body: 'Bạn sẽ có lãi, đảm bảo như vậy.'.normalize('NFD') }, 'banned_phrase'],
     ['promise', { body: 'Chắc chắn bạn sẽ có lãi từ {{impact_low}}.' }, 'banned_phrase'],
     ['automation claim', { why_now: 'Hệ thống sẽ tự động đổi giá cho bạn.' }, 'banned_phrase'],
     ['markup', { title: '<b>Tạm dừng</b> {{sku_name}}' }, 'markup'],

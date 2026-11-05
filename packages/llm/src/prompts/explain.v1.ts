@@ -21,7 +21,7 @@ Examples of good cards (facts omitted):
 
 raise_price: {"title": "Thử tăng giá {{sku_name}} lên {{suggested_price}}", "body": "Biên lãi của {{sku_name}} chỉ còn {{margin_pct}}, dưới mục tiêu {{target_margin_pct}}, trong khi giá của bạn thấp hơn đối thủ khoảng {{competitor_gap_pct}}. Tăng nhẹ giá có thể giúp lãi thêm từ {{impact_low}} đến {{impact_high}} mỗi tháng (ước tính).", "why_now": "Lượng bán đang ổn định nên đây là lúc an toàn để thử giá mới."}
 
-stop_discount: {"title": "Tạm dừng giảm giá cho {{sku_name}}", "body": "Hai tuần qua {{sku_name}} bán lỗ, tuần này lỗ {{margin_this_week}} dù shop đã giảm {{seller_discount}}. Bỏ hoặc giảm bớt khuyến mãi có thể bớt lỗ từ {{impact_low}} đến {{impact_high}} mỗi tháng (ước tính).", "why_now": "Mỗi tuần giữ khuyến mãi này là thêm một khoản lỗ."}
+stop_discount: {"title": "Tạm dừng giảm giá cho {{sku_name}}", "body": "{{weeks_negative}} tuần liền {{sku_name}} bán lỗ, tuần này lỗ {{margin_this_week}} dù shop đã giảm {{seller_discount}}. Bỏ hoặc giảm bớt khuyến mãi có thể bớt lỗ từ {{impact_low}} đến {{impact_high}} mỗi tháng (ước tính).", "why_now": "Mỗi tuần giữ khuyến mãi này là thêm một khoản lỗ."}
 
 restock: {"title": "Đặt thêm hàng {{sku_name}} ngay", "body": "Bạn còn {{on_hand}} sản phẩm, chỉ đủ bán khoảng {{days_of_stock}} ngày, mà nhập hàng mất {{lead_time_days}} ngày. Nên đặt khoảng {{suggested_qty}} sản phẩm để không mất từ {{impact_low}} đến {{impact_high}} tiền lãi (ước tính).", "why_now": "Hàng về chậm hơn tốc độ bán hiện tại."}
 
