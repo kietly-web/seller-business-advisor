@@ -2,6 +2,21 @@ export class AuthNotConfiguredError extends Error {
   override readonly name = 'AuthNotConfiguredError';
 }
 
+export interface AuthMethods {
+  emailPassword: boolean;
+  google: { clientId: string; clientSecret: string } | null;
+}
+
+// Email + password needs a way to send verification emails; outside local development that means SES
+export function authMethodsFromEnv(env: Record<string, string | undefined>): AuthMethods {
+  const clientId = env.GOOGLE_CLIENT_ID?.trim();
+  const clientSecret = env.GOOGLE_CLIENT_SECRET?.trim();
+  return {
+    emailPassword: Boolean(env.AWS_SES_REGION && env.EMAIL_FROM) || env.NODE_ENV !== 'production',
+    google: clientId && clientSecret ? { clientId, clientSecret } : null,
+  };
+}
+
 export function assertProductionAuthConfig(env: Record<string, string | undefined>): void {
   if (env.NODE_ENV !== 'production') {
     return;
@@ -12,7 +27,8 @@ export function assertProductionAuthConfig(env: Record<string, string | undefine
   if (!(env.BETTER_AUTH_URL ?? '').startsWith('https://')) {
     throw new AuthNotConfiguredError('BETTER_AUTH_URL must be https in production');
   }
-  if (!env.AWS_SES_REGION || !env.EMAIL_FROM) {
-    throw new AuthNotConfiguredError('AWS_SES_REGION and EMAIL_FROM must be set in production');
+  const methods = authMethodsFromEnv(env);
+  if (!methods.emailPassword && !methods.google) {
+    throw new AuthNotConfiguredError('Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET, or AWS_SES_REGION and EMAIL_FROM, in production');
   }
 }

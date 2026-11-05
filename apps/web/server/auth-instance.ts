@@ -1,7 +1,7 @@
 import 'server-only';
 import { appDb } from '@sa/db';
 import { createAuth, type Auth } from './auth';
-import { AuthNotConfiguredError, assertProductionAuthConfig } from './auth-config';
+import { AuthNotConfiguredError, assertProductionAuthConfig, authMethodsFromEnv } from './auth-config';
 import { createEmailSender } from './email';
 
 let instance: Auth | undefined;
@@ -22,6 +22,7 @@ export function getAuth(): Auth {
     baseURL: requireEnv('BETTER_AUTH_URL'),
     secret: requireEnv('BETTER_AUTH_SECRET'),
     checkBreachedPasswords: true,
+    ...authMethodsFromEnv(process.env),
   });
   return instance;
 }

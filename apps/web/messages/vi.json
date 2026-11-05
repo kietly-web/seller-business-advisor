@@ -38,7 +38,8 @@
     "consentsHint": "Mỗi mục là một lựa chọn riêng. Chỉ mục đầu tiên là bắt buộc.",
     "submit": "Tạo tài khoản",
     "haveAccount": "Đã có tài khoản?",
-    "signInLink": "Đăng nhập"
+    "signInLink": "Đăng nhập",
+    "googleConsentNote": "Nếu tiếp tục với Google, bạn sẽ chọn các mục đồng ý xử lý dữ liệu ngay sau khi đăng nhập, trước khi dùng dịch vụ."
   },
   "consents": {
     "service_processing": "Tôi đồng ý để Seller Advisor xử lý dữ liệu kinh doanh tôi tải lên (đơn hàng, phí, giá vốn) để tính lợi nhuận và gợi ý việc nên làm. Bắt buộc để dùng dịch vụ.",
@@ -56,7 +57,12 @@
     "password": "Mật khẩu",
     "submit": "Đăng nhập",
     "noAccount": "Chưa có tài khoản?",
-    "signUpLink": "Tạo tài khoản"
+    "signUpLink": "Tạo tài khoản",
+    "google": "Tiếp tục với Google",
+    "or": "hoặc dùng email",
+    "googleOnly": "Đăng nhập bằng tài khoản Google của bạn.",
+    "googleError": "Không đăng nhập được bằng Google. Vui lòng thử lại.",
+    "accountNotLinked": "Email này đã được đăng ký bằng mật khẩu nhưng chưa xác nhận. Hãy mở email xác nhận trước, hoặc đăng nhập bằng mật khẩu."
   },
   "onboarding": {
     "title": "Thiết lập shop",
