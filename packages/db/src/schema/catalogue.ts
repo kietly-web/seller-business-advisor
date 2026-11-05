@@ -14,6 +14,7 @@ export const sku = app.table(
     platformItemId: text('platform_item_id'),
     platformModelId: text('platform_model_id'),
     sellerSku: text('seller_sku'),
+    skuKey: text('sku_key'),
     name: text('name').notNull(),
     variation: text('variation'),
     active: boolean('active').notNull().default(true),
@@ -21,6 +22,7 @@ export const sku = app.table(
   (t) => [
     unique('sku_platform_unique').on(t.shopId, t.platformItemId, t.platformModelId),
     unique('sku_shop_id_unique').on(t.shopId, t.id),
+    unique('sku_shop_key_unique').on(t.shopId, t.skuKey),
   ],
 );
 
