@@ -87,6 +87,25 @@ Selection:
 4. Keep the top 5. Confidence labels: `high` ≥ 0.65, `medium` ≥ 0.45, else `low`.
 5. Persist every candidate's score in the run's debug record (worker-only table or log) for rule tuning, not only the top 5.
 
+## Run (SA-406)
+
+`runRecommendations` in `apps/web/server/weekly-run.ts`:
+
+1. Takes the last finished ISO week.
+2. Loads the inputs in one shop-scoped transaction (`loadRuleInputs`): metrics up to that week, SKUs with their cost and **current** stock (as of the run date, not the week's end), 8 weeks of card history, learned stats, and competitor prices from the 14 days before the week's end.
+3. Calls `planRecommendations`, then the explain step with each card's template as fallback, **outside any transaction**.
+4. Stores the run and its cards with `saveRun`.
+
+A new run expires the previous run's unanswered cards. `recommendation_run.notes` keeps what the UI needs to explain a quiet week: weeks of history, skipped-rule reasons (upload nudges), the missing-cost list and the prompt version.
+
+On-demand runs are limited to 3 per shop per 24 hours. The weekly cron and the demo shop's first run use the same function.
+
+Card decisions follow fixed transitions (`shown` → `accepted` / `done` / `dismissed`; `accepted` → `done` / `dismissed`), each audited. Dismiss reasons: `not_relevant` (hides the rule for that SKU for 8 weeks), `already_done`, `disagree`, `cannot_do`, `other`. The seller rates any decided card 1–5 for clarity.
+
+Every card carries a visible label: "Nội dung do AI (Claude) viết…" when the model wrote it, "Gợi ý do hệ thống tạo tự động…" for template text.
+
+Competitor median (SA-408): the latest price per listing within 14 days, with at least 2 listings (`competitorMedian` in the engine). It's computed at run time and on the competitor page, not stored in `sku_week_metric`, which leaves that column for a later slice.
+
 ## Act
 
 Each `checklistKey` maps to a Vietnamese step-by-step checklist with the Seller Centre path, for example for a price change: Sản phẩm → Tất cả sản phẩm → Sửa → Giá. Checklists are static content, versioned with the rule, and not LLM-generated, because instructions must be exact. The LLM may only add one sentence of context.

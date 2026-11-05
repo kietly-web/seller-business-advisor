@@ -1,6 +1,6 @@
 # Shopee Seller Advisor: decisions and trade-offs (BA case study)
 
-Written 05/11/2026, after Slice F. This is the single place that explains **what we decided, why, and what we gave up**, for business analysts and anyone reviewing the project. It links to the detailed records rather than repeating them. Start at [the docs index](README.md) if you want the full set of documents.
+Written 05/11/2026, after Slice F; updated after Slice G. This is the single place that explains **what we decided, why, and what we gave up**, for business analysts and anyone reviewing the project. It links to the detailed records rather than repeating them. Start at [the docs index](README.md) if you want the full set of documents.
 
 How to read it:
 
@@ -55,6 +55,9 @@ Each row names the decision, the business reason, the trade-off we accepted, and
 | P5 | **Competitor prices are seller-entered** | No scraping, ever (Shopee terms) | Price-gap rules only work for sellers who log competitors | [Discovery](discovery/discovery-summary.md#fixed-decisions-from-discovery) |
 | P6 | **Public landing and sign-up pages are indexed by search engines; signed-in pages are not** | Acquisition through search; nothing private is exposed | Pages are visible before the legal pages (privacy policy, terms) exist; those are on the go-live checklist | [STATUS](STATUS.md) |
 | P7 | **Vietnamese UI only, English docs and code** | The users are Vietnamese; the builders and reviewers work in English | Translation discipline: all UI text sits in one file (`messages/vi.json`) | [CLAUDE.md](../CLAUDE.md) |
+| P8 | **A new week's cards replace last week's unanswered ones** (they expire) | A short, current list beats a growing backlog | An unanswered card disappears; the seller can still see what they accepted or did | [05 Run](design/05-recommendation-engine.md#run-sa-406) |
+| P9 | **Sellers can refresh their cards on demand, at most 3 times a day** | Sellers update costs or stock and want new advice now; each refresh can call the AI | A fourth refresh in a day waits until tomorrow | [05 Run](design/05-recommendation-engine.md#run-sa-406) |
+| P10 | **Every card is labelled, including template text** ("written by AI" or "generated automatically") | AI Law 134/2025 labelling, and honesty about automation | Slightly more text on each card | [05 Run](design/05-recommendation-engine.md#run-sa-406) |
 
 ### 3.2 Data, privacy and security
 
@@ -88,6 +91,7 @@ Each row names the decision, the business reason, the trade-off we accepted, and
 | E11 | **The AI writes `{{placeholders}}` instead of numbers; code fills them in. Any card with a stray digit, number word, promise or markup falls back to the template** | Guarantees zero invented numbers (NFR-AIQ) | Some good AI cards are thrown away by strict checks; the template is always safe | [06 Validation](design/06-llm-integration.md#validation-in-order) |
 | E12 | **The product works with no AI at all** (template mode) | Outages, refusals and local development must not break the product | Template text is plainer than AI text | [06](design/06-llm-integration.md) |
 | E13 | **The paid live AI test runs only on request (a PR label) or nightly** | Each run costs money | AI wording regressions are caught by the nightly run, not by every change; offline checks run on every change | [06 Evaluation](design/06-llm-integration.md#evaluation) |
+| E14 | **Recommendations use current stock, not stock at the end of the analysed week** | Restock and clearance advice is about what's on the shelf now | Stock and sales refer to slightly different moments | [05 Run](design/05-recommendation-engine.md#run-sa-406) |
 
 ### 3.4 Platform and delivery
 
@@ -101,6 +105,8 @@ Each row names the decision, the business reason, the trade-off we accepted, and
 | T6 | **Parsers stay marked "assumed" until 3 real anonymised files pass** | Column names come from memory of Seller Centre, not real exports (Q-D1) | The biggest delivery risk stays open until design partners share files | [04](design/04-ingestion-parser.md) |
 | T7 | **Claude may turn on auto-merge only for conflict-free PRs; the owner resolves conflicts** | Keeps a human on the risky part of merging | The owner is a bottleneck when conflicts happen | [CLAUDE.md](../CLAUDE.md#merging-owners-rule) |
 | T8 | **A smoke check calls the live site after every production deploy** | A production page once returned errors that CI's build didn't catch | One more workflow to maintain | [STATUS](STATUS.md) |
+| T9 | **The weekly run uses one weekly cron that also drains its own jobs** | Vercel's free plan allows one cron a day, and a weekly schedule fits | At most 20 shops per firing; more need the paid plan's per-minute drain | [07](design/07-infrastructure.md) |
+| T10 | **The AI is called outside database transactions** | A slow AI call must never hold a database connection | The run is two short transactions instead of one atomic one; a crash between them loses that run, not data | [05 Run](design/05-recommendation-engine.md#run-sa-406) |
 
 ## 4. What's still open
 
@@ -111,8 +117,8 @@ Each row names the decision, the business reason, the trade-off we accepted, and
 | Anthropic data location, retention and no-training terms (Q-T2) | Must be in the privacy policy before beta (E10) | Owner |
 | Production configuration: database migrations secret, auth and email settings, AI key | Sign-up, uploads and AI wording don't work in production yet | Owner ([STATUS](STATUS.md#waiting-on-the-owner)) |
 | Privacy policy, terms and legal pages | Required before the first real seller (P6) | Owner, counsel |
-| Weekly run, action cards with the AI label, competitor tracker | Turns the engine into something sellers see (Slice G) | Next slice |
-| Outcome measurement, data export and account deletion | Closes the loop on "did it pay off" and data rights (Slice H) | Later slice |
+| Outcome measurement, data export and account deletion | Closes the loop on "did it pay off" and data rights (Slice H) | Next slice |
+| `CRON_SECRET` in Vercel | Without it the weekly cards don't generate automatically | Owner |
 
 ## 5. Lessons learned
 
@@ -131,7 +137,7 @@ Problems caught before they reached a user, and how:
 Process observations:
 
 - **Discovery IDs paid off.** Requirements (FR-xx), stories (US-xx) and risks (R-x) are cited in code, tests and this log, so a reviewer can trace any decision back to a business need ([traceability](design/09-traceability.md)).
-- **Lean mode kept momentum without dropping standards.** Six slices shipped in two days, each with tests and, where risky, a security review.
+- **Lean mode kept momentum without dropping standards.** Seven slices (A–G) shipped in two days, each with tests and, where risky, a security review.
 - **Writing the trade-off down changes the decision.** Several rules were refined while writing the scenarios and docs (for example, the campaign rule only flags products that were profitable before the campaign).
 
 ## 6. Glossary
