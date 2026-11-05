@@ -146,3 +146,41 @@ describe('two-factor authentication', () => {
     expect(enrolment.backupCodes.length).toBeGreaterThan(0);
   });
 });
+
+describe('abuse protections', () => {
+  it('answers a duplicate sign-up like a new one and emails the existing owner instead', async () => {
+    const before = email.sent.length;
+    const result = await auth.api.signUpEmail({
+      body: { email: 'lan@example.com', password: 'another-long-password-2026', name: 'Someone' },
+    });
+    expect(result.user.email).toBe('lan@example.com');
+    expect(email.sent.slice(before).map((m) => m.subject)).toEqual(['Bạn đã có tài khoản Seller Advisor']);
+  });
+
+  it('caps a session at 14 days with no sliding refresh', async () => {
+    const { rows } = await client.query<{ days: number }>(
+      `select round(extract(epoch from s.expires_at - s.created_at) / 86400)::int as days
+       from auth.session s join auth.user u on u.id = s.user_id where u.email = 'lan@example.com' limit 1`,
+    );
+    expect(rows[0]?.days).toBe(14);
+  });
+
+  it('rate-limits password sign-in per client IP, stored in the database', async () => {
+    const attempt = () =>
+      auth.handler(
+        new Request('http://localhost:3000/api/auth/sign-in/email', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-real-ip': '203.0.113.7', origin: 'http://localhost:3000' },
+          body: JSON.stringify({ email: 'lan@example.com', password: 'wrong-password-123' }),
+        }),
+      );
+    const statuses: number[] = [];
+    for (let i = 0; i < 6; i += 1) {
+      statuses.push((await attempt()).status);
+    }
+    expect(statuses.slice(0, 5).every((s) => s === 401)).toBe(true);
+    expect(statuses[5]).toBe(429);
+    const { rows } = await client.query<{ n: number }>(`select count(*)::int as n from auth.rate_limit`);
+    expect(rows[0]?.n).toBeGreaterThan(0);
+  });
+});

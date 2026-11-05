@@ -37,6 +37,7 @@ Raw Shopee order IDs are treated as C3 because they can be linked back to a buye
 - Password policy per ASVS: at least 8 characters, a breached-password check (k-anonymity range API) at sign-up, no composition rules.
 - Authorisation has two layers. The app checks membership and role (`owner`/`staff`) before acting, and RLS enforces the shop boundary regardless.
 - Owner-only actions: delete the account, export all data, change consents, invite staff (Phase 2).
+- As built (SA-105): email verification required before sign-in; sessions last 14 days with no sliding refresh; rate limits stored in Postgres (`auth.rate_limit`) so they hold across serverless instances: sign-in 5/min, sign-up 3/min, resend verification 3 per 5 min per client IP (`x-real-ip`, set by Vercel). A sign-up for an existing email answers like a new one and emails the existing owner, so responses don't reveal which emails have accounts. Production refuses to start auth without a ≥ 32-character secret, an `https` base URL and SES config. Add a Vercel Firewall rate rule on `/api/auth/sign-in/*` as a second layer.
 
 ## Application security checklist (ASVS L2 highlights)
 

@@ -1,6 +1,7 @@
 import 'server-only';
 import { appDb } from '@sa/db';
 import { createAuth, type Auth } from './auth';
+import { assertProductionAuthConfig } from './auth-config';
 import { createEmailSender } from './email';
 
 let instance: Auth | undefined;
@@ -14,6 +15,7 @@ function requireEnv(name: string): string {
 }
 
 export function getAuth(): Auth {
+  assertProductionAuthConfig(process.env);
   instance ??= createAuth({
     db: appDb(),
     email: createEmailSender(process.env),

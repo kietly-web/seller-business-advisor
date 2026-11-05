@@ -6,7 +6,7 @@ Each requirement maps to the design section that answers it, the backlog items t
 
 | Req | Design | Backlog | Tests (planned) |
 | --- | --- | --- | --- |
-| FR-01 Sign up email/Google, verify | 03 Auth, ADR-007, ADR-009 | SA-105 (email; Google follows) | `apps/web/server/auth.test.ts` (sign-up, unverified sign-in refused, verify link, password hashing, min length, HIBP, TOTP enrolment), `apps/web/server/email.test.ts`; `auth.signup.e2e` with SA-106 UI |
+| FR-01 Sign up email/Google, verify | 03 Auth, ADR-007, ADR-009 | SA-105 (email; Google follows) | `apps/web/server/auth.test.ts` (sign-up, unverified sign-in refused, verify link, password hashing, min length, HIBP, TOTP enrolment, duplicate sign-up, 14-day session, sign-in rate limit), `apps/web/server/email.test.ts`, `apps/web/server/auth-config.test.ts`, auth-schema isolation in `packages/db/src/rls/policies.test.ts`; `auth.signup.e2e` with SA-106 UI |
 | FR-02 Separate unticked consents | 03 Consent, 02 `consent_record` | SA-106 | `consent.unticked-default.e2e`, `consent.ledger-append-only.int` |
 | FR-03 Upload, detect, preview, reject unknown | 04 Pipeline, Upload API | SA-201, SA-203, SA-205, SA-206 | `parsers.detect.*.unit`, `ingest.reject-unknown.e2e` |
 | FR-04 Strip buyer PII in browser, show removed | 04 Allowlist, ADR-003 | SA-201, SA-205, SA-206 | `parsers.pii-never-mapped.unit`, `parsers.synthetic-buyer-cols-dropped.unit`, `ingest.pii-suspected-reject.int` |

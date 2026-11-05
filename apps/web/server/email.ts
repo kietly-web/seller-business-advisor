@@ -56,6 +56,21 @@ export function createEmailSender(env: Record<string, string | undefined>): Emai
   return env.NODE_ENV === 'development' && !env.VERCEL ? new DevLogEmailSender() : new UnconfiguredEmailSender();
 }
 
+export function existingAccountEmail(to: string, signInUrl: string): EmailMessage {
+  return {
+    to,
+    subject: 'Bạn đã có tài khoản Seller Advisor',
+    text: [
+      'Chào bạn,',
+      '',
+      'Ai đó (có thể là bạn) vừa đăng ký Seller Advisor bằng email này, nhưng email đã có tài khoản.',
+      `Đăng nhập tại: ${signInUrl}`,
+      '',
+      'Nếu không phải bạn, hãy bỏ qua email này. Tài khoản của bạn không thay đổi.',
+    ].join('\n'),
+  };
+}
+
 export function verificationEmail(to: string, url: string): EmailMessage {
   return {
     to,

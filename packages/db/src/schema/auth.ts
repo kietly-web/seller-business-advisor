@@ -1,4 +1,4 @@
-import { boolean, index, integer, pgSchema, text, timestamp } from 'drizzle-orm/pg-core';
+import { bigint, boolean, index, integer, pgSchema, text, timestamp } from 'drizzle-orm/pg-core';
 
 export const authSchema = pgSchema('auth');
 
@@ -82,3 +82,10 @@ export const twoFactor = authSchema.table(
   },
   (t) => [index('two_factor_user_idx').on(t.userId)],
 );
+
+export const rateLimit = authSchema.table('rate_limit', {
+  id: text('id').primaryKey(),
+  key: text('key').notNull().unique(),
+  count: integer('count').notNull(),
+  lastRequest: bigint('last_request', { mode: 'number' }).notNull(),
+});

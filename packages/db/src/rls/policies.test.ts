@@ -243,3 +243,24 @@ describe('policy coverage (catalog check)', () => {
     }
   });
 });
+
+describe('auth schema isolation', () => {
+  it.each(['user', 'session', 'account', 'verification', 'two_factor', 'rate_limit'])(
+    'keeps auth.%s out of reach of the tenant roles',
+    async (table) => {
+      expect(await fails(appA, `select * from auth."${table}"`)).toMatch(/permission denied/);
+      expect(await fails({ role: 'sa_worker', shopId: SHOP_A }, `select * from auth."${table}"`)).toMatch(
+        /permission denied/,
+      );
+    },
+  );
+
+  it('grants sa_auth access to every auth table', async () => {
+    const { rows } = await client.query<{ table_name: string }>(
+      `select table_name from information_schema.tables t
+       where table_schema = 'auth'
+         and not has_table_privilege('sa_auth', format('%I.%I', table_schema, table_name), 'select, insert, update, delete')`,
+    );
+    expect(rows).toEqual([]);
+  });
+});
