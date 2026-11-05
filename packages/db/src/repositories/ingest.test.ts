@@ -15,6 +15,7 @@ import {
 } from './ingest';
 import { rowsOf } from './rows';
 import { createShop } from './shops';
+import { listSkuCosts, setUnitCost } from './costs';
 
 const USER = 'ingest-owner';
 const HASH_A = 'a'.repeat(64);
@@ -157,5 +158,20 @@ describe('ingest', () => {
         stageRecords(tx, other, uploadId, [line(3, HASH_A, 'sku:A', 1)]),
       ),
     ).rejects.toBeInstanceOf(UploadStateError);
+  });
+});
+
+describe('costs', () => {
+  it('lists SKUs with their current cost, missing ones first, and upserts inline edits', async () => {
+    await ingest('shopee.orders', 'o1', [line(2, HASH_A, 'sku:A', 1000), line(3, HASH_B, 'sku:B', 1000)]);
+    const before = await inShop((tx) => listSkuCosts(tx, shopId, '2026-11-05'));
+    expect(before.map((c) => c.cogsVnd)).toEqual([null, null]);
+    const [first] = before;
+    if (!first) throw new Error('no sku');
+    await inShop((tx) => setUnitCost(tx, { shopId, skuId: first.skuId, userId: USER, cogsVnd: 300n, packagingVnd: 20n, effectiveFrom: '2026-11-05' }));
+    await inShop((tx) => setUnitCost(tx, { shopId, skuId: first.skuId, userId: USER, cogsVnd: 350n, packagingVnd: 20n, effectiveFrom: '2026-11-05' }));
+    const after = await inShop((tx) => listSkuCosts(tx, shopId, '2026-11-05'));
+    expect(after.map((c) => c.cogsVnd)).toEqual([null, 350n]);
+    expect(await inShop((tx) => listSkuCosts(tx, shopId, '2026-11-04')).then((r) => r.every((c) => c.cogsVnd === null))).toBe(true);
   });
 });

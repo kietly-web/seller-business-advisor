@@ -1,7 +1,9 @@
 'use server';
 
 import { appDb, ShopAlreadyExistsError } from '@sa/db';
+import { toIctDate, type ShopId } from '@sa/shared';
 import { redirect } from 'next/navigation';
+import { seedDemoShop } from '../../server/demo-seed';
 import { createShopForUser, demoShopInput, parseOnboarding, type FieldErrors } from '../../server/onboarding';
 import { myShops, requireConsentedUser } from '../../server/session';
 
@@ -29,16 +31,20 @@ export async function createShopAction(_prev: OnboardingState, form: FormData): 
 
 export async function createDemoShopAction(): Promise<void> {
   const user = await userWithoutShop();
-  await createOnce(user.id, demoShopInput());
+  const shopId = await createOnce(user.id, demoShopInput());
+  if (shopId) {
+    await seedDemoShop(appDb(), { userId: user.id, shopId }, toIctDate(new Date()));
+  }
   redirect('/tong-quan');
 }
 
-async function createOnce(userId: string, input: Parameters<typeof createShopForUser>[2]): Promise<void> {
+async function createOnce(userId: string, input: Parameters<typeof createShopForUser>[2]): Promise<ShopId | null> {
   try {
-    await createShopForUser(appDb(), userId, input);
+    return await createShopForUser(appDb(), userId, input);
   } catch (error) {
     if (!(error instanceof ShopAlreadyExistsError)) {
       throw error;
     }
+    return null;
   }
 }
