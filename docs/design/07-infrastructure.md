@@ -27,7 +27,7 @@ Real seller data never leaves production: no production snapshots in preview, an
 | Path | Schedule (UTC) | ICT | Job |
 | --- | --- | --- | --- |
 | `/api/cron/drain` | `* * * * *` | every minute | Claim and run due jobs (≤ 50 s per invocation) |
-| `/api/cron/weekly` | `5 17 * * 0` | Mon 00:05 | Enqueue `weekly_run` per active shop |
+| `/api/cron/weekly` | `0 18 * * 0` | Mon 01:00 | Run each shop's weekly recommendations directly (short transactions, model call between them, deduplicated per shop and week) for up to 4 minutes. **Registered** in `vercel.json`: a weekly cron fits the Hobby plan's once-a-day limit |
 | `/api/cron/daily` | `0 19 * * *` | 02:00 | Enqueue `measure_outcomes`, `retention_purge`, `dsr_deadline_check`, `stale_upload_cleanup` |
 
 Each cron route checks `Authorization: Bearer ${CRON_SECRET}`, which Vercel sends automatically when the env var is set.

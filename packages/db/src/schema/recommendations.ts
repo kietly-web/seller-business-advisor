@@ -67,6 +67,7 @@ export const recommendationRun = app.table(
     engineVersion: text('engine_version').notNull(),
     llmModel: text('llm_model'),
     llmFallbackUsed: boolean('llm_fallback_used'),
+    notes: jsonb('notes').notNull().default({}),
     startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),
     finishedAt: tstz('finished_at'),
   },

@@ -123,3 +123,9 @@ export async function runDueJobs(
   }
   return summary;
 }
+
+export async function listActiveShopIds(db: Db): Promise<ShopId[]> {
+  return withContext(db, { role: 'sa_worker' }, async (tx) =>
+    rowsOf<{ id: string }>(await tx.execute(sql`select id from app_ctx.active_shop_ids() as id`)).map((r) => asShopId(r.id)),
+  );
+}

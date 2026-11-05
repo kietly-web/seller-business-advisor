@@ -64,6 +64,13 @@
       "when": 1793877067129,
       "tag": "0008_metric_week_index",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793884342166,
+      "tag": "0009_run_notes",
+      "breakpoints": true
     }
   ]
 }

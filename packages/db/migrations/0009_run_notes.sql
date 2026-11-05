@@ -1,0 +1,1 @@
+ALTER TABLE "app"."recommendation_run" ADD COLUMN "notes" jsonb DEFAULT '{}'::jsonb NOT NULL;

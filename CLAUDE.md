@@ -9,6 +9,7 @@ An AI decision assistant for small Vietnamese Shopee sellers. It turns their exp
 | Path | What |
 | --- | --- |
 | `docs/STATUS.md` | Current stage, next slice, blockers, environment facts, gotchas. Read first; update in every slice PR |
+| `README.md` | Folder map and page list. Update it when you add a top-level folder, package or page |
 | `docs/README.md` | Index of every document, for people and agents |
 | `docs/case-study.md` | Decisions and trade-offs for BA readers. Add a row when a slice makes a significant decision or trade-off |
 | `docs/discovery/discovery-summary.md` | Requirement, story, risk and metric IDs (FR-xx, NFR-xx, US-xx, R-x). Cite these IDs. |
@@ -60,7 +61,7 @@ These come from the discovery pack and the Vietnamese legal register. Do not tra
 ## Conventions
 
 - TypeScript strict. Money is `bigint` VND (no minor unit). Timestamps are `timestamptz`; business dates and ISO weeks use `Asia/Ho_Chi_Minh`, weeks start Monday.
-- UI copy is Vietnamese first. Docs and code are English.
+- UI copy is Vietnamese first. Docs and code are English only: never translate a document into Vietnamese. Vietnamese appears in docs only as a quoted literal value (a URL, a Shopee column name, a UI string the code checks for), with an English gloss where the meaning matters.
 - Format VND as `1.234.000 ₫` and dates as `dd/MM/yyyy` via `@sa/shared`.
 - Commit subjects, PR titles and branch names: `SA-123 short imperative description` (backlog IDs from `docs/design/08-delivery-plan.md`). Branch ≤ 60 chars, e.g. `SA-104-rls-policies`.
 - PR descriptions follow `.github/pull_request_template.md`. The `## What changed` section is required (CI fails if it is empty).

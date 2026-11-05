@@ -55,5 +55,6 @@ Every project document, grouped by what you want to know. If you read one thing,
 
 | Document | Read it to learn |
 | --- | --- |
+| [Folder map](../README.md#folder-map) | What each folder contains and which page lives where |
 | [CLAUDE.md](../CLAUDE.md) | Project rules, non-negotiables, how we work, merging |
 | [Agent definitions](../.claude/agents/) | The security reviewer and BA analyst agents |

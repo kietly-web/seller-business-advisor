@@ -88,7 +88,9 @@
     "costsLink": "Giá vốn",
     "uploadsTitle": "Các lần tải lên gần đây",
     "noUploads": "Chưa có dữ liệu nào được tải lên.",
-    "profitLink": "Lợi nhuận theo tuần"
+    "profitLink": "Lợi nhuận theo tuần",
+    "actionsLink": "Việc nên làm tuần này",
+    "competitorsLink": "Giá đối thủ"
   },
   "settings": {
     "title": "Cài đặt",
@@ -219,6 +221,96 @@
     "completedOn": "Hoàn thành {date}",
     "notFound": "Không có dữ liệu cho sản phẩm này trong tuần đã chọn.",
     "backLink": "Về bảng lợi nhuận",
+    "dashboardLink": "Về trang tổng quan"
+  },
+  "actions": {
+    "title": "Việc nên làm tuần này",
+    "intro": "Tối đa năm việc, xếp theo hiệu quả ước tính. Bạn tự quyết định và tự thực hiện trong Kênh Người Bán; chúng tôi không thay đổi gì trên Shopee.",
+    "weekOf": "Dựa trên dữ liệu tuần {n} ({from} – {to})",
+    "refresh": "Cập nhật gợi ý",
+    "refreshHint": "Tối đa ba lần mỗi ngày. Gợi ý cũ chưa trả lời sẽ được thay bằng gợi ý mới.",
+    "refreshing": "Đang tính…",
+    "rateLimited": "Bạn đã cập nhật ba lần hôm nay. Hãy thử lại vào ngày mai.",
+    "none": "Chưa có gợi ý. Bấm “Cập nhật gợi ý” để tạo.",
+    "empty": "Tuần này không có việc gì cần làm gấp. Dữ liệu của bạn trông ổn.",
+    "insufficient": "Cần ít nhất bốn tuần dữ liệu đơn hàng để đưa ra gợi ý. Hiện có {n} tuần.",
+    "uploadMore": "Tải lên thêm dữ liệu",
+    "aiLabelLlm": "Nội dung do AI (Claude) viết. Mọi con số do hệ thống tính từ dữ liệu bạn đã tải lên.",
+    "aiLabelTemplate": "Gợi ý do hệ thống tạo tự động từ dữ liệu bạn đã tải lên.",
+    "impactMargin": "Ước tính: {low} đến {high} tiền lãi mỗi tháng",
+    "impactCash": "Ước tính: thu về {low} đến {high} tiền mặt",
+    "impactAvoided": "Ước tính: tránh lỗ {low} đến {high} mỗi đợt khuyến mãi",
+    "confidence": {
+      "high": "Độ tin cậy: cao",
+      "medium": "Độ tin cậy: vừa",
+      "low": "Độ tin cậy: thấp, nên kiểm tra trước"
+    },
+    "checklistTitle": "Các bước trong Kênh Người Bán",
+    "evidenceTitle": "Số liệu dùng để tính",
+    "evidenceWeek": "Lợi nhuận tuần {n}",
+    "evidenceStock": "Tồn kho mới nhất",
+    "accept": "Sẽ làm",
+    "done": "Đã làm xong",
+    "dismiss": "Bỏ qua",
+    "dismissReason": "Lý do bỏ qua",
+    "reasons": {
+      "not_relevant": "Không phù hợp với shop",
+      "already_done": "Đã làm rồi",
+      "disagree": "Không đồng ý với số liệu",
+      "cannot_do": "Không làm được lúc này",
+      "other": "Lý do khác"
+    },
+    "status": {
+      "shown": "Mới",
+      "accepted": "Sẽ làm",
+      "dismissed": "Đã bỏ qua",
+      "done": "Đã làm",
+      "expired": "Đã hết hạn"
+    },
+    "doneNote": "Chúng tôi sẽ so sánh kết quả sau bảy và mười bốn ngày.",
+    "rateTitle": "Gợi ý này có dễ hiểu không?",
+    "rateValue": "{n} trên năm",
+    "rated": "Cảm ơn bạn đã đánh giá.",
+    "missingCosts": "Nhập giá vốn cho các sản phẩm bán chạy này để có gợi ý về lãi:",
+    "enterCosts": "Nhập giá vốn",
+    "nudges": {
+      "no_stock_data": "Tải lên file tồn kho để nhận gợi ý nhập hàng và xả hàng tồn.",
+      "no_competitor_data": "Ghi lại giá đối thủ để nhận gợi ý về giá.",
+      "no_traffic_data": "Gợi ý về lượt xem và tỷ lệ mua sẽ có khi hỗ trợ file hiệu quả sản phẩm.",
+      "no_campaign": ""
+    },
+    "stockTemplate": "Tải mẫu tồn kho",
+    "addCompetitors": "Ghi giá đối thủ",
+    "error": "Không lưu được. Vui lòng thử lại.",
+    "dashboardLink": "Về trang tổng quan"
+  },
+  "competitors": {
+    "title": "Giá đối thủ",
+    "intro": "Ghi lại giá của sản phẩm tương tự từ shop khác. Chúng tôi không tự truy cập các đường link này; bạn tự xem giá trên Shopee rồi nhập vào đây.",
+    "addListing": "Thêm sản phẩm đối thủ",
+    "product": "Sản phẩm của bạn",
+    "url": "Link sản phẩm đối thủ (shopee.vn)",
+    "label": "Tên gợi nhớ (không bắt buộc)",
+    "save": "Lưu",
+    "price": "Giá đối thủ (₫)",
+    "observedOn": "Ngày xem giá",
+    "note": "Ghi chú (không bắt buộc)",
+    "addPrice": "Ghi giá",
+    "latest": "Giá gần nhất: {price} ({date})",
+    "noPrice": "Chưa ghi giá",
+    "median": "Giá giữa của đối thủ trong mười bốn ngày: {price} ({n} đối thủ)",
+    "needTwo": "Cần giá của ít nhất hai đối thủ trong mười bốn ngày để so sánh.",
+    "open": "Mở link",
+    "empty": "Chưa có đối thủ nào. Thêm link sản phẩm tương tự để bắt đầu.",
+    "noSkus": "Chưa có sản phẩm. Hãy tải lên file đơn hàng trước.",
+    "errors": {
+      "url": "Link phải bắt đầu bằng https://shopee.vn/",
+      "price": "Nhập giá hợp lệ, ví dụ 189.000.",
+      "date": "Chọn ngày trong chín mươi ngày gần đây.",
+      "sku": "Chọn một sản phẩm.",
+      "generic": "Không lưu được. Vui lòng thử lại."
+    },
+    "saved": "Đã lưu.",
     "dashboardLink": "Về trang tổng quan"
   }
 }
