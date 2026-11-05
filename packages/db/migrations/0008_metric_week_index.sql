@@ -1,0 +1,1 @@
+CREATE INDEX "sku_week_metric_shop_week_idx" ON "app"."sku_week_metric" USING btree ("shop_id","iso_week");

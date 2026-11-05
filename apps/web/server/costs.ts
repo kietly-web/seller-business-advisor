@@ -1,5 +1,6 @@
 import { listSkuCosts, setUnitCost, withShopContext, type Db, type SkuCost } from '@sa/db';
 import { stockTemplate, unitCostTemplate, writeCsv, type TemplateSku, type UnitCostPrefill } from '@sa/parsers';
+import { recomputeInTx } from './metrics';
 import { asIsoDate, asSkuId, asUserId, parseVnd, type IsoDate, type ShopId } from '@sa/shared';
 
 interface Who {
@@ -21,7 +22,7 @@ export function parseCostForm(form: FormData): { skuId: string; cogsVnd: bigint;
   const cogs = parseVnd(String(form.get('cogs') ?? ''));
   const packagingRaw = String(form.get('packaging') ?? '').trim();
   const packaging = packagingRaw === '' ? 0n : parseVnd(packagingRaw);
-  if (!/^[0-9a-f-]{36}$/.test(skuId) || cogs === null || packaging === null) return null;
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(skuId) || cogs === null || packaging === null) return null;
   if (cogs < 0n || packaging < 0n || cogs > MAX_VND || packaging > MAX_VND) return null;
   return { skuId, cogsVnd: cogs, packagingVnd: packaging };
 }
@@ -29,9 +30,11 @@ export function parseCostForm(form: FormData): { skuId: string; cogsVnd: bigint;
 export async function saveCost(db: Db, who: Who, form: FormData, today: IsoDate): Promise<boolean> {
   const input = parseCostForm(form);
   if (!input) return false;
-  await inShop(db, who, (tx) =>
-    setUnitCost(tx, { shopId: who.shopId, skuId: asSkuId(input.skuId), userId: who.userId, cogsVnd: input.cogsVnd, packagingVnd: input.packagingVnd, effectiveFrom: today }),
-  );
+  const skuId = asSkuId(input.skuId);
+  await inShop(db, who, async (tx) => {
+    await setUnitCost(tx, { shopId: who.shopId, skuId, userId: who.userId, cogsVnd: input.cogsVnd, packagingVnd: input.packagingVnd, effectiveFrom: today });
+    await recomputeInTx(tx, who.shopId, [skuId]);
+  });
   return true;
 }
 

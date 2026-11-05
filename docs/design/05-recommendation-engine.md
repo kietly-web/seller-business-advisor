@@ -21,20 +21,22 @@ All values are per SKU per ISO week (Monday–Sunday, `Asia/Ho_Chi_Minh`), count
 | Metric | Formula |
 | --- | --- |
 | `gross_revenue` | Σ quantity × deal price |
-| `seller_discount` | Σ seller-funded vouchers and discounts allocated to the line |
+| `seller_discount` | Σ seller-funded vouchers and discounts of the order, allocated pro rata by the line's share of order gross revenue |
 | `net_revenue` | gross_revenue − seller_discount |
 | `platform_fees` | Σ line-level fees + order-level fees allocated pro rata by the line's share of order gross revenue |
-| `cogs` | Σ quantity × (cogs + packaging) using the `unit_cost` effective on the order date; **null** if any line lacks a cost |
+| `cogs` | Σ quantity × (cogs + packaging) using the `unit_cost` effective on the order date, or the earliest cost for orders before it (sellers enter today's cost and expect it to cover history); **null** if the SKU has no cost |
 | `contribution_margin` | net_revenue − platform_fees − cogs |
 | `margin_pct` | contribution_margin ÷ net_revenue |
 | `avg_selling_price` | net_revenue ÷ units |
 | `conversion_pct` | orders ÷ visitors (if traffic data exists) |
 | `avg_daily_units_28d` | units over the trailing 28 days ÷ 28 |
-| `stock_cover_days` | on_hand (latest snapshot) ÷ avg_daily_units_28d; null if no stock data; ∞ if no sales |
+| `stock_cover_days` | on_hand (latest snapshot on or before the week's end) ÷ avg_daily_units_28d; null if no stock data; ∞ if no sales (stored as 999999.99, the column maximum) |
 | `competitor_median` | median of the latest observation per listing within 14 days, ≥ 2 listings required |
 | `price_gap_pct` | (avg_selling_price − competitor_median) ÷ competitor_median |
 
-Sanity rules: all money arithmetic is in `bigint`, and percentages are computed once at the end in `number` and rounded to 4 decimals. Allocation residue from rounding goes to the largest line, so the totals reconcile exactly with the income export. A test asserts Σ allocated = Σ order fees.
+Sanity rules: all money arithmetic is in `bigint`, and percentages are computed once at the end in `number` and rounded to 4 decimals. Allocation residue from rounding goes to the largest line, so the totals reconcile exactly with the income export. Fees of orders with no completed line in the data (cancelled, returned, or missing from the orders export) are reported per week as unallocated, never spread over other SKUs. A test asserts Σ allocated + Σ unallocated = Σ fee lines.
+
+Metrics are recomputed in the request that changes their inputs: after an upload completes (whole shop) and after an inline cost edit (that SKU's orders). Rows whose content hash is unchanged are not rewritten, and rows no longer produced are deleted. The `metrics.recompute` job handler does the same work for the queue, once a cron drains it (Vercel Pro, go-live checklist).
 
 ## Diagnose: rule library v1
 

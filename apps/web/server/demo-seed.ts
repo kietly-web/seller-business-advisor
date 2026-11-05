@@ -4,6 +4,7 @@ import { chunkRecords, createOrderHasher, detect, prepare, REGISTRY, toWire, tra
 import { generateShop, incomeExport, ordersExport, stockFile, unitCostsFile } from '@sa/parsers/synthetic';
 import { addDays, type IsoDate, type ShopId } from '@sa/shared';
 import { finishUpload, sendChunk, startUpload } from './ingest';
+import { recomputeMetrics } from './metrics';
 
 // The demo shop goes through the same parse → validate → merge path as a seller's upload (FR-12)
 export async function seedDemoShop(db: Db, who: { userId: string; shopId: ShopId }, today: IsoDate): Promise<void> {
@@ -17,6 +18,7 @@ export async function seedDemoShop(db: Db, who: { userId: string; shopId: ShopId
   for (const [fileName, table] of files) {
     await ingestTable(db, who, fileName, table, today);
   }
+  await recomputeMetrics(db, who);
 }
 
 async function ingestTable(db: Db, who: { userId: string; shopId: ShopId }, fileName: string, table: Table, today: IsoDate) {
@@ -49,7 +51,7 @@ async function ingestTable(db: Db, who: { userId: string; shopId: ShopId }, file
   const done = await finishUpload(db, who, started.uploadId, {
     expectedRecords: records.length,
     issues: [...counts].map(([code, count]) => ({ code, count })),
-  });
+  }, { recompute: false });
   if (!done.ok) {
     throw new Error(`Demo upload ${fileName} could not complete: ${done.error}`);
   }

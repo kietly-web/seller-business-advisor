@@ -23,6 +23,7 @@ export default async function DashboardPage() {
       </div>
       <p>{t.dashboard.welcome}</p>
       <div className="row">
+        <Link href="/loi-nhuan">{t.dashboard.profitLink}</Link>
         <Link href="/tai-len">{t.dashboard.uploadLink}</Link>
         <Link href="/gia-von">{t.dashboard.costsLink}</Link>
       </div>

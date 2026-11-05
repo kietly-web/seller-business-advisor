@@ -112,6 +112,26 @@ describe('ingest service', () => {
   }, 120_000);
 });
 
+describe('recompute failure', () => {
+  it('reports a committed upload as done and queues the recompute', async () => {
+    const who = await newShop('svc-recompute');
+    const started = await startUpload(db, who, start({ parserId: 'seller.stock@v1', fileSha256: 'd'.repeat(64) }));
+    if (!started.ok) throw new Error(started.error);
+    await client.exec('alter table app.sku_week_metric rename to sku_week_metric_off');
+    try {
+      const done = await finishUpload(db, who, started.uploadId, { expectedRecords: 0, issues: [] });
+      expect(done.ok).toBe(true);
+    } finally {
+      await client.exec('alter table app.sku_week_metric_off rename to sku_week_metric');
+    }
+    const jobs = await client.transaction(async (t) => {
+      await t.query('set local role sa_worker');
+      return (await t.query("select kind from app.job where kind = 'metrics.recompute' and shop_id = $1", [who.shopId])).rows;
+    });
+    expect(jobs).toHaveLength(1);
+  });
+});
+
 describe('parseCostForm', () => {
   const form = (fields: Record<string, string>) => {
     const f = new FormData();

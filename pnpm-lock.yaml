@@ -250,7 +250,7 @@ importers:
         version: link:../shared
       drizzle-orm:
         specifier: 0.45.4
-        version: 0.45.4(@electric-sql/pglite@0.5.15)(@neondatabase/serverless@1.2.0)
+        version: 0.45.4(@electric-sql/pglite@0.5.15)(@neondatabase/serverless@1.2.0)(kysely@0.29.8)
     devDependencies:
       '@electric-sql/pglite':
         specifier: 0.5.15
@@ -264,6 +264,10 @@ importers:
       '@sa/shared':
         specifier: workspace:*
         version: link:../shared
+    devDependencies:
+      '@sa/parsers':
+        specifier: workspace:*
+        version: link:../parsers
 
   packages/llm:
     dependencies:
@@ -3308,11 +3312,6 @@ snapshots:
       '@esbuild-kit/esm-loader': 2.6.5
       esbuild: 0.25.12
       tsx: 4.23.15
-
-  drizzle-orm@0.45.4(@electric-sql/pglite@0.5.15)(@neondatabase/serverless@1.2.0):
-    optionalDependencies:
-      '@electric-sql/pglite': 0.5.15
-      '@neondatabase/serverless': 1.2.0
 
   drizzle-orm@0.45.4(@electric-sql/pglite@0.5.15)(@neondatabase/serverless@1.2.0)(kysely@0.29.8):
     optionalDependencies:

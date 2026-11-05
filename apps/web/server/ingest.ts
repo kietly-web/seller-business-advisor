@@ -5,6 +5,7 @@ import {
   createUpload,
   listUploads,
   DuplicateUploadError,
+  enqueueJob,
   stageRecords,
   UploadStateError,
   withShopContext,
@@ -15,6 +16,7 @@ import {
 import { looksLikePii, parserById, recordHasPii, toWire, wireChunk, type ParserId } from '@sa/parsers';
 import { asUploadId, asUserId, type ShopId } from '@sa/shared';
 import { z } from 'zod';
+import { recomputeMetrics } from './metrics';
 
 export type IngestError = 'invalid' | 'duplicate' | 'pii_suspected' | 'state' | 'incomplete';
 export type IngestResult<T> = ({ ok: true } & T) | { ok: false; error: IngestError };
@@ -119,6 +121,7 @@ export async function finishUpload(
   who: Who,
   uploadIdInput: unknown,
   input: unknown,
+  options: { recompute?: boolean } = {},
 ): Promise<IngestResult<{ rowCount: number; unknownSkuRows: number; periodFrom: string | null; periodTo: string | null }>> {
   const uploadId = uploadIdSchema.safeParse(uploadIdInput);
   const parsed = finishSchema.safeParse(input);
@@ -135,9 +138,24 @@ export async function finishUpload(
         warnings: parsed.data.issues,
       }),
     );
+    if (options.recompute !== false) {
+      await recomputeOrQueue(db, who);
+    }
     return { ok: true, ...result };
   } catch (error) {
     return stateError(error);
+  }
+}
+
+// The upload has committed: a failed recompute must not report the upload as failed
+async function recomputeOrQueue(db: Db, who: Who): Promise<void> {
+  try {
+    await recomputeMetrics(db, who);
+  } catch {
+    console.error(`[metrics] recompute failed shop=${who.shopId}; queued`);
+    await inShop(db, who, (tx) => enqueueJob(tx, { kind: 'metrics.recompute', shopId: who.shopId, dedupeKey: `metrics.recompute:${who.shopId}` })).catch(
+      () => console.error(`[metrics] could not queue recompute shop=${who.shopId}`),
+    );
   }
 }
 
