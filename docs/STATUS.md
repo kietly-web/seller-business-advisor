@@ -1,10 +1,10 @@
 # Project status
 
-Last updated: 05/11/2026 (Slice B) · Update this file in every slice PR (see `CLAUDE.md`, "How we work"). It is the hand-off note for any agent or person joining the work: read it after `CLAUDE.md` and before starting anything.
+Last updated: 05/11/2026 (Slice C) · Update this file in every slice PR (see `CLAUDE.md`, "How we work"). It is the hand-off note for any agent or person joining the work: read it after `CLAUDE.md` and before starting anything.
 
 ## Where we are
 
-**Milestone M1 (data, auth, consent) is complete.** M2 (ingestion) is in progress: Slice B (parsers) is done, Slice C (upload flow) is next.
+**Milestone M1 (data, auth, consent) is complete.** **M2 (ingestion) is complete** with Slices B and C. Next milestone: M3 (see and decide), starting with Slice D (profit).
 
 | Area | State |
 | --- | --- |
@@ -14,6 +14,7 @@ Last updated: 05/11/2026 (Slice B) · Update this file in every slice PR (see `C
 | Slice A: sign-up with consents, sign-in, check-email, shop onboarding / demo shop, dashboard, consent settings, sign-out (SA-106, SA-107) | Done (PR for `SA-106-signup-onboarding-ui`) |
 | Audit action catalogue (SA-108), job runner + `/api/cron/drain` (SA-109), compliance docs (SA-110) | Done |
 | Slice B: parser registry, header normalisation, detection, PII allowlist + test, order-ID hashing, synthetic 12-month shop with export writers, `shopee.orders@v1`, `shopee.income@v1` (assumed), `seller.unit_costs@v1`, `seller.stock@v1` + CSV templates (SA-201–204) | Done (PR for `SA-201-parsers`). No real Seller Centre files yet, so both Shopee parsers stay `assumed` |
+| Slice C: upload page `/tai-len` (Web Worker, XLSX via SheetJS + CSV, mapping preview, removed buyer columns shown, progress), ingest service with zod + PII value scan and SQL merge, costs page `/gia-von` (inline edit, missing costs first), CSV templates `/mau/gia-von` and `/mau/ton-kho`, demo shop seeded with 12 months of synthetic data on creation, upload history on `/tong-quan` (SA-205, SA-206, SA-207, SA-209) | Done (PR for `SA-205-upload-flow`). Ingest uses server actions, not REST (ADR-010). Upload resume after reload is not built |
 | Process | Lean mode: slices, CI as gate, go-live checklist |
 
 Parsers (`packages/parsers`) work on a `string[][]` table: `detect` → `prepare` (mapping and removed columns, no values read) → seller confirms → `transform` (async, hashes order IDs). File reading (Papa Parse for CSV, SheetJS for XLSX) belongs to the upload worker in SA-206. The synthetic generator is a separate entry, `@sa/parsers/synthetic`, so it stays out of the browser bundle.
@@ -22,14 +23,14 @@ Routes: `/` (landing), `/dang-ky`, `/kiem-tra-email`, `/dang-nhap`, `/dong-y` (c
 
 ## Next
 
-**Slice C: upload flow** (SA-205, SA-206, SA-207, SA-209): ingest API with zod re-validation and the PII value scan, upload UI in a Web Worker, costs UI, demo-shop seeding from the synthetic generator. Security review required (ingestion). Open points for it: `ingest_stage.record_kind` has no `unit_cost` kind yet (unit costs may write straight to `unit_cost`), SKU rows must be derived from order lines by `skuKey`, and the server must zod-validate and PII-scan `removed_columns` names too (they come from the file). Order hashes are pseudonymous, not anonymous: the server holds the salt and Shopee IDs have low entropy, so the data inventory treats them as personal data until counsel says otherwise. Full slice list: `docs/design/08-delivery-plan.md`.
+**Slice D: profit** (SA-301–304, `docs/design/08-delivery-plan.md`): weekly per-SKU metrics in `packages/engine` (fee allocation that reconciles with the income export, missing-cost exclusion), the recompute job after `finishUpload`, and the profit screen with drill-down to source rows. The demo shop already has 12 months of data to build against. Notes for it: `upload.warnings` holds `UNKNOWN_SKU` and row-issue counts; order lines are keyed by `sku_key`; SKUs without a cost have no `unit_cost` row.
 
 ## Open PRs
 
 | PR | What | Action |
 | --- | --- | --- |
 | #22 | Dependabot minor/patch group | Merge if CI is green |
-| (this slice) | Slice B parsers, `SA-201-parsers` | Auto-merge when CI is green |
+| (this slice) | Slice C upload flow, `SA-205-upload-flow` | Merge when CI is green |
 
 ## Waiting on the owner
 
@@ -60,5 +61,7 @@ Routes: `/` (landing), `/dang-ky`, `/kiem-tra-email`, `/dang-nhap`, `/dong-y` (c
 - **SEO is on** (owner's decision, 05/11/2026): public pages `/`, `/dang-ky`, `/dang-nhap` are indexable with `robots.txt` and `sitemap.xml`; signed-in pages carry `noindex` and are disallowed. Public pages render as signed-out when auth isn't configured (`getOptionalSessionUser`); signed-in pages still fail loudly.
 - `smoke.yml` checks the production domain whenever Vercel's commit status on `main` turns green (`/`, `/dang-ky`, `/robots.txt`, `/sitemap.xml` must return 200), and can be run by hand (workflow_dispatch). Vercel reports to GitHub through commit statuses, not GitHub Deployments, so `deployment_status` triggers never fire. CI's build passing doesn't prove pages render; this does.
 - Sign-up/sign-in can't work on Vercel yet: production auth env isn't set, and `BETTER_AUTH_URL` must match each deployment's origin (Better Auth's origin check), so previews need their own value.
+- `main` has no required checks yet, so `gh pr merge --auto` merges at once instead of waiting for CI. Until branch protection is on, wait for CI to pass before merging.
+- Local end-to-end runs need `DATABASE_URL` and auth env in `apps/web/.env.local`; none is set up, so UI changes are verified by unit tests, `pnpm build` and the Vercel preview.
 - Parser fixtures under `packages/parsers/fixtures/` are committed with `-text` (`.gitattributes`) so CRLF and BOM edge cases keep their bytes.
 - Project agent files added mid-session aren't available until a new session starts; use a general-purpose agent pointed at the agent file instead.
