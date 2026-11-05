@@ -109,9 +109,9 @@ ID format `SA-<milestone><nn>`, which is also the commit and branch prefix (see 
 - Shopee ISV application via the household business (Q-D2) → gates FR-16.
 - Interview synthesis, as-is/to-be process maps, willingness to pay → `ba-analyst` can draft guides and synthesis templates.
 
-## Status (05/11/2026)
+## Status
 
-Done: M0 (SA-001–006) and in M1 SA-101–105 (email sign-up; Google sign-in deferred), SA-108–110.
+Current stage, open PRs and blockers: [`docs/STATUS.md`](../STATUS.md).
 
 ## Remaining work as slices
 

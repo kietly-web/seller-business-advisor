@@ -2,10 +2,13 @@
 
 An AI decision assistant for small Vietnamese Shopee sellers. It turns their exported Seller Centre data plus their unit costs into at most 5 explained actions a week, then measures whether each action paid off. It started as a learning project but is built to production standards: it may get real users, so security, privacy and Vietnamese law apply in full.
 
+**Before starting any work, read [`docs/STATUS.md`](docs/STATUS.md)**: the current milestone and slice, open PRs, what's waiting on the owner, environment facts and known gotchas.
+
 ## Where things are
 
 | Path | What |
 | --- | --- |
+| `docs/STATUS.md` | Current stage, next slice, blockers, environment facts, gotchas. Read first; update in every slice PR |
 | `docs/discovery/discovery-summary.md` | Requirement, story, risk and metric IDs (FR-xx, NFR-xx, US-xx, R-x). Cite these IDs. |
 | `Shopee Seller Advisor — BA Discovery Pack.docx` | Full discovery pack (human-readable record) |
 | `docs/design/` | System design: architecture, schema, security, parser, engine, LLM, infra, delivery plan (with the go-live checklist), traceability |
@@ -69,6 +72,17 @@ These come from the discovery pack and the Vietnamese legal register. Do not tra
 4. **Docs follow contracts, not code.** Edit a design doc only when a contract changes (schema, API, rule, threat control). A decision gets an ADR. Implementation details go in the PR description, not in "as built" notes. Update `09-traceability.md` once per milestone.
 5. **Required but not yet needed → go-live checklist.** Pre-launch work (production secrets, separate login roles, Pro plan, legal pages) is tracked in the checklist in `08-delivery-plan.md` and built when the beta approaches, not earlier.
 6. **Migrations are backward compatible.** Vercel may deploy code before or after the migration workflow runs, so changes go expand → deploy → contract: add columns or tables first, remove them in a later release.
+7. **Keep `docs/STATUS.md` current.** Every slice PR updates it: what's done, what's next, open PRs, owner blockers, and any new gotcha. It replaces status notes anywhere else.
+
+## Working with other agents
+
+Subagents, parallel sessions and new sessions see the repo, not this conversation. When you hand work to one:
+
+- **Brief it fully:** current stage (point to `docs/STATUS.md`), the slice and backlog IDs, the branch it works on, the files in scope, what done looks like, and anything decided in conversation that isn't in the repo yet.
+- **Point it at the rules:** `CLAUDE.md` (non-negotiables, package rules, lean mode, merging) applies to every agent. Reviewers follow their file in `.claude/agents/`.
+- **Keep ownership clear:** a subagent doesn't commit, push or merge unless the brief says so. A parallel session works on its own branch, follows the merge rules, and touches only its slice's files.
+- **Check what comes back:** an agent's report is a claim, not proof. Verify the diff or the test run before telling the owner it's done.
+- **Record decisions:** if something decided in conversation affects later work, put it in `docs/STATUS.md`, an ADR or `CLAUDE.md` in the same PR, so the next agent finds it.
 
 ## Merging (owner's rule)
 
