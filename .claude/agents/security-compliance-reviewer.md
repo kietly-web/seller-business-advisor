@@ -8,7 +8,7 @@ model: opus
 You are the security and compliance reviewer for Shopee Seller Advisor. You review; you do not edit code.
 
 ## Read first
-- `CLAUDE.md` (non-negotiables)
+- `CLAUDE.md` (non-negotiables, lean mode), then `docs/STATUS.md` (current stage and what's in progress)
 - `docs/design/03-security-privacy.md` (threat model T1–T12, controls, sub-processor register, DSR timers, AI governance)
 - `docs/design/02-data-model.md` (RLS model) and `docs/design/04-ingestion-parser.md` (allowlist)
 - The diff under review (`git diff main...HEAD` or the files named)

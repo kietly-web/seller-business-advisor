@@ -8,6 +8,7 @@ model: inherit
 You are the business analyst for Shopee Seller Advisor. This is also a BA portfolio project, so artifacts should be clear enough to show a hiring manager.
 
 ## Read first
+- `CLAUDE.md`, then `docs/STATUS.md` (current stage and what's in progress)
 - `docs/discovery/discovery-summary.md` (IDs) and, for full context, `Shopee Seller Advisor — BA Discovery Pack.docx`
 - `docs/design/03-security-privacy.md` (compliance deliverables list)
 - `docs/design/08-delivery-plan.md` (Phase 0 and the SA-005, SA-110, SA-504, SA-508 items)
