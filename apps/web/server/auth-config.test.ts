@@ -38,8 +38,9 @@ describe('assertProductionAuthConfig', () => {
 
 describe('authMethodsFromEnv', () => {
   it('offers email and password in production only with SES, and Google only with both keys', () => {
-    expect(authMethodsFromEnv({ ...base, ...google })).toEqual({ emailPassword: false, google: { clientId: google.GOOGLE_CLIENT_ID, clientSecret: 'secret' } });
-    expect(authMethodsFromEnv({ ...base, ...ses })).toEqual({ emailPassword: true, google: null });
+    expect(authMethodsFromEnv({ ...base, ...google })).toEqual({ emailPassword: false, google: true });
+    expect(authMethodsFromEnv({ ...base, ...ses })).toEqual({ emailPassword: true, google: false });
+    expect(JSON.stringify(authMethodsFromEnv({ ...base, ...google }))).not.toContain('secret');
     expect(authMethodsFromEnv({ NODE_ENV: 'development' }).emailPassword).toBe(true);
   });
 });

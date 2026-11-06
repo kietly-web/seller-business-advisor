@@ -39,12 +39,21 @@ export function createAuth(deps: AuthDeps) {
         await deps.email.send(existingAccountEmail(existing.email, `${deps.baseURL}/dang-nhap`));
       },
     },
-    socialProviders: deps.google
-      ? { google: { clientId: deps.google.clientId, clientSecret: deps.google.clientSecret, prompt: 'select_account' } }
-      : {},
+    socialProviders: {
+      google: {
+        enabled: deps.google !== null,
+        clientId: deps.google?.clientId ?? '',
+        clientSecret: deps.google?.clientSecret ?? '',
+        prompt: 'select_account',
+        // Data minimisation: keep the name Google returns, not the profile photo
+        mapProfileToUser: (profile) => ({ name: profile.name, image: undefined }),
+      },
+    },
     account: {
       // Never attach a Google login to an account whose email was not verified: blocks pre-registration takeover
       accountLinking: { enabled: true, requireLocalEmailVerified: true, allowDifferentEmails: false },
+      // We never call Google APIs after sign-in, but Better Auth stores the tokens: keep them encrypted at rest
+      encryptOAuthTokens: true,
     },
     session: {
       expiresIn: 14 * DAY,

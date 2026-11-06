@@ -4,16 +4,15 @@ export class AuthNotConfiguredError extends Error {
 
 export interface AuthMethods {
   emailPassword: boolean;
-  google: { clientId: string; clientSecret: string } | null;
+  google: boolean;
 }
 
 // Email + password needs a way to send verification emails; outside local development that means SES
 export function authMethodsFromEnv(env: Record<string, string | undefined>): AuthMethods {
-  const clientId = env.GOOGLE_CLIENT_ID?.trim();
-  const clientSecret = env.GOOGLE_CLIENT_SECRET?.trim();
+  // Only presence is read here, so pages can use this; the secret itself is read in server-only auth-instance.ts
   return {
     emailPassword: Boolean(env.AWS_SES_REGION && env.EMAIL_FROM) || env.NODE_ENV !== 'production',
-    google: clientId && clientSecret ? { clientId, clientSecret } : null,
+    google: Boolean(env.GOOGLE_CLIENT_ID?.trim() && env.GOOGLE_CLIENT_SECRET?.trim()),
   };
 }
 

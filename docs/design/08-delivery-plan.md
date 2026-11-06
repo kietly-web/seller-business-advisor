@@ -132,23 +132,4 @@ M6 items stay as listed above and come after the beta.
 
 ## Go-live checklist (before the first real seller)
 
-Required for a professional launch but deliberately not built yet. Each line names who does it.
-
-| Item | Who |
-| --- | --- |
-| Separate Neon LOGIN roles for runtime (member of `sa_app`, `sa_worker`, `sa_auth`) and for migrations; runtime must not use the owner URL | Owner + Claude |
-| `DATABASE_URL_MIGRATE` secret in GitHub so `migrate.yml` applies migrations to production | Owner |
-| Production env in Vercel: `BETTER_AUTH_SECRET` (≥ 32 chars), `BETTER_AUTH_URL` (https), `AWS_SES_REGION`, `EMAIL_FROM`, AWS SES credentials, `CRON_SECRET`, `ANTHROPIC_API_KEY` | Owner |
-| SES: verify the sending domain, SPF/DKIM/DMARC, request production access | Owner |
-| Branch protection on `main` with required checks; GitHub auto-merge allowed | Owner |
-| Smoke-test previews before merge: `VERCEL_AUTOMATION_BYPASS_SECRET` (Vercel → Deployment Protection → Protection Bypass for Automation) plus a way to get each preview URL (Vercel GitHub Deployments or the Vercel API) | Owner + Claude |
-| Before real sellers: privacy policy and terms live, so indexed public pages link to them | Claude drafts, owner approves |
-| Vercel Pro (commercial use, per-minute cron) and register the drain cron | Owner + Claude |
-| Vercel Firewall rate rule on `/api/auth/sign-in/*` | Owner |
-| Error tracking with PII scrubbing (ADR + sub-processor row) | Claude |
-| Google OAuth client in Google Cloud, `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in Vercel; consent screen published (code done) | Owner |
-| Counsel answers to Q-L1–L3; transfer impact assessment filed (SA-508) | Owner + counsel |
-| Privacy policy, terms and complaint channel in Vietnamese (SA-504) | Claude drafts, owner + counsel approve |
-| Whole-app security review, ASVS L2 checklist, CSP and headers (SA-505) | Claude |
-| a11y and performance audits (SA-506); end-to-end tests of the full loop (SA-507) | Claude |
-| Restore drill from Neon point-in-time restore; breach-runbook tabletop drill | Owner |
+Tracked item by item, with priorities and exact steps, in [SETUP.md](../SETUP.md) (sections 0 to 2 for configuration, section 4 for the remaining backlog).

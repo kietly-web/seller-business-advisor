@@ -22,7 +22,14 @@ export function getAuth(): Auth {
     baseURL: requireEnv('BETTER_AUTH_URL'),
     secret: requireEnv('BETTER_AUTH_SECRET'),
     checkBreachedPasswords: true,
-    ...authMethodsFromEnv(process.env),
+    emailPassword: authMethodsFromEnv(process.env).emailPassword,
+    google: googleCredentials(),
   });
   return instance;
+}
+
+function googleCredentials(): { clientId: string; clientSecret: string } | null {
+  const clientId = process.env.GOOGLE_CLIENT_ID?.trim();
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET?.trim();
+  return clientId && clientSecret ? { clientId, clientSecret } : null;
 }

@@ -251,6 +251,14 @@ describe('Google sign-in', () => {
   it('never links Google to an account whose email is unverified', async () => {
     const g = await googleAuth(true);
     expect(g.options.account?.accountLinking).toMatchObject({ enabled: true, requireLocalEmailVerified: true, allowDifferentEmails: false });
+    expect(g.options.account?.encryptOAuthTokens).toBe(true);
+    const google = g.options.socialProviders?.google as { mapProfileToUser?: (profile: unknown) => unknown } | undefined;
+    expect(await google?.mapProfileToUser?.({ name: 'Lan', picture: 'https://x/p.jpg', email: 'lan@example.vn' })).toEqual({ name: 'Lan', image: undefined });
+  });
+
+  it('offers no Google flow when the keys are not set', async () => {
+    const error = await errorOf(auth.api.signInSocial({ body: { provider: 'google', callbackURL: '/tong-quan' } }));
+    expect(error).not.toBeNull();
   });
 
   it('turns email and password off when there is no way to send verification email', async () => {
