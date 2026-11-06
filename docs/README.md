@@ -7,7 +7,8 @@ Every project document, grouped by what you want to know. If you read one thing,
 | Document | Read it to learn |
 | --- | --- |
 | [Case study: decisions and trade-offs](case-study.md) | The business problem, every major decision with its trade-off, what's open, lessons learned |
-| [Project status](STATUS.md) | Where the build is now, what's next, what's waiting on the owner |
+| [Project status](STATUS.md) | Where the build is now and what's next |
+| [Setup and open work register](SETUP.md) | Every setting, secret, security fix, gap, backlog item and future idea not done yet, with steps |
 | [BA Discovery Pack (.docx)](../Shopee%20Seller%20Advisor%20—%20BA%20Discovery%20Pack.docx) | The original discovery record: personas, journeys, requirements with Gherkin criteria, legal register |
 | [Discovery summary](discovery/discovery-summary.md) | The requirement, story, metric and risk IDs (FR, NFR, US, R) cited everywhere else |
 
@@ -33,7 +34,7 @@ Every project document, grouped by what you want to know. If you read one thing,
 | [05 Recommendation engine](design/05-recommendation-engine.md) | Profit metrics, rules, ranking, outcomes |
 | [06 LLM integration](design/06-llm-integration.md) | How Claude writes card text and why it can't invent numbers |
 | [07 Infrastructure](design/07-infrastructure.md) | Vercel, Neon, CI/CD, environments |
-| [08 Delivery plan](design/08-delivery-plan.md) | Backlog, slices and the go-live checklist |
+| [08 Delivery plan](design/08-delivery-plan.md) | Backlog and slices |
 | [09 Traceability](design/09-traceability.md) | Which design section and test covers each requirement |
 
 ## Decision records (ADRs)

@@ -10,7 +10,7 @@ SA-105 needs to send verification emails (and later the weekly digest, FR-15), a
 
 - **Email:** Amazon SES v2 in `ap-southeast-1` (Singapore), through `@aws-sdk/client-sesv2`, behind the `EmailSender` interface in `apps/web/server/email.ts`. Without SES configuration, local development logs messages to the console, and every other environment refuses to send (sign-up fails visibly instead of leaking links into logs).
 - **Breached passwords:** Better Auth's `haveIBeenPwned` plugin on sign-up, password change and reset. Only the first 5 hex characters of the password's SHA-1 hash leave the server (k-anonymity range API); the password, its full hash and the user's email are never sent.
-- **Google sign-in** is deferred until the owner creates an OAuth client; email + password + verification ships first.
+- **Google sign-in** is deferred until the owner creates an OAuth client; email + password + verification ships first. (Updated 05/11/2026: Google sign-in is built and turns on when `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are set. In production, email + password is offered only when SES is configured, because it can't verify addresses otherwise. The owner prefers Google as the main sign-in.)
 
 ## Consequences
 

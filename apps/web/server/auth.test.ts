@@ -40,6 +40,8 @@ beforeAll(async () => {
     baseURL: 'http://localhost:3000',
     secret: TEST_SECRET,
     checkBreachedPasswords: false,
+    emailPassword: true,
+    google: null,
   });
 });
 
@@ -110,6 +112,8 @@ describe('breached-password check', () => {
       baseURL: 'http://localhost:3000',
       secret: TEST_SECRET,
       checkBreachedPasswords: true,
+      emailPassword: true,
+      google: null,
     });
     const sha1 = createHash('sha1').update('password123').digest('hex').toUpperCase();
     const requested: string[] = [];
@@ -220,5 +224,48 @@ describe('consents at sign-up', () => {
       `select count(*)::int as n from app.consent_record c join auth.user u on u.id = c.user_id where u.email = 'lan@example.com'`,
     );
     expect(rows[0]?.n).toBe(3);
+  });
+});
+
+describe('Google sign-in', () => {
+  const googleAuth = async (emailPassword: boolean) =>
+    createAuth({
+      db: (await createTestDb()).db,
+      email: new CapturingSender(),
+      baseURL: 'https://seller-business-advisor.vercel.app',
+      secret: TEST_SECRET,
+      checkBreachedPasswords: false,
+      emailPassword,
+      google: { clientId: 'test-client.apps.googleusercontent.com', clientSecret: randomBytes(16).toString('hex') },
+    });
+
+  it('starts the Google flow with account selection and our callback URL', async () => {
+    const g = await googleAuth(true);
+    const result = (await g.api.signInSocial({ body: { provider: 'google', callbackURL: '/tong-quan' } })) as { url?: string };
+    const url = new URL(result.url ?? '');
+    expect(url.hostname).toBe('accounts.google.com');
+    expect(url.searchParams.get('prompt')).toBe('select_account');
+    expect(url.searchParams.get('redirect_uri')).toBe('https://seller-business-advisor.vercel.app/api/auth/callback/google');
+  });
+
+  it('never links Google to an account whose email is unverified', async () => {
+    const g = await googleAuth(true);
+    expect(g.options.account?.accountLinking).toMatchObject({ enabled: true, requireLocalEmailVerified: true, allowDifferentEmails: false });
+    expect(g.options.account?.encryptOAuthTokens).toBe(true);
+    const google = g.options.socialProviders?.google as { mapProfileToUser?: (profile: unknown) => unknown } | undefined;
+    expect(await google?.mapProfileToUser?.({ name: 'Lan', picture: 'https://x/p.jpg', email: 'lan@example.vn' })).toEqual({ name: 'Lan', image: undefined });
+  });
+
+  it('offers no Google flow when the keys are not set', async () => {
+    const error = await errorOf(auth.api.signInSocial({ body: { provider: 'google', callbackURL: '/tong-quan' } }));
+    expect(error).not.toBeNull();
+  });
+
+  it('turns email and password off when there is no way to send verification email', async () => {
+    const g = await googleAuth(false);
+    const error = await errorOf(
+      g.api.signUpEmail({ body: { name: 'Lan', email: 'lan@example.vn', password: PASSWORD, consents: CONSENTS } as SignUpBody }),
+    );
+    expect(error).not.toBeNull();
   });
 });

@@ -1,6 +1,6 @@
 # Project status
 
-Last updated: 05/11/2026 (Slice G) · Update this file in every slice PR (see `CLAUDE.md`, "How we work"). It is the hand-off note for any agent or person joining the work: read it after `CLAUDE.md` and before starting anything.
+Last updated: 06/11/2026 (Google sign-in, setup register) · Update this file in every slice PR (see `CLAUDE.md`, "How we work"). It is the hand-off note for any agent or person joining the work: read it after `CLAUDE.md` and before starting anything.
 
 Decisions and trade-offs so far are summarised for BA readers in [case-study.md](case-study.md); every document is indexed in [README.md](README.md).
 
@@ -12,7 +12,7 @@ Decisions and trade-offs so far are summarised for BA readers in [case-study.md]
 | --- | --- |
 | M0 Foundations (SA-001–006) | Done |
 | Data layer: schema, RLS, roles, tenant-scoped keys, `withShopContext`, repositories, generated RLS suite (SA-101–104) | Done |
-| Auth: email + password, verification email, TOTP 2FA, breach check, DB rate limits, 14-day sessions (SA-105) | Done. Google sign-in deferred; no 2FA UI yet |
+| Auth: email + password, verification email, TOTP 2FA, breach check, DB rate limits, 14-day sessions (SA-105) | Done. Google sign-in built (turns on with `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET`); email + password shows in production only with SES; no 2FA UI yet |
 | Slice A: sign-up with consents, sign-in, check-email, shop onboarding / demo shop, dashboard, consent settings, sign-out (SA-106, SA-107) | Done (PR for `SA-106-signup-onboarding-ui`) |
 | Audit action catalogue (SA-108), job runner + `/api/cron/drain` (SA-109), compliance docs (SA-110) | Done |
 | Slice B: parser registry, header normalisation, detection, PII allowlist + test, order-ID hashing, synthetic 12-month shop with export writers, `shopee.orders@v1`, `shopee.income@v1` (assumed), `seller.unit_costs@v1`, `seller.stock@v1` + CSV templates (SA-201–204) | Done (PR for `SA-201-parsers`). No real Seller Centre files yet, so both Shopee parsers stay `assumed` |
@@ -21,7 +21,7 @@ Decisions and trade-offs so far are summarised for BA readers in [case-study.md]
 | Slice E: rules v1 (7 rules + `COST_MISSING` banner list) with static Vietnamese templates and Seller Centre checklists, scoring with data quality and learned confidence, cooldown/dismissal, one per SKU, two per action type, top 5, data-sufficiency gates and skip reasons, golden set of 22 scenarios (SA-401–403) | Done (PR for `SA-401-engine-rules`). Entry point: `planRecommendations(ctx)` in `packages/engine`. Nothing calls it from the app yet: the weekly run is SA-406 (Slice G) |
 | Slice F: `packages/llm` with the strict payload builder, placeholder/digit/phrase/markup/language validation, `ClaudeLlmClient` (Opus 5.5, low effort, structured output, `fallbacks: "default"`, cached system prompt), `TemplateLlmClient`, prompt `explain.v1`, adversarial tests, `llm_call` logging, label-gated live eval (SA-404, SA-405) | Done (PR for `SA-404-llm-explain`). App entry point: `explainForShop` in `apps/web/server/llm.ts`; not called until SA-406 |
 | Slice G: weekly run (on demand, 3 per day, plus a weekly cron), action cards page `/hanh-dong` with the AI label, checklists, evidence links, accept/dismiss-with-reason/done and rating; competitor tracker `/doi-thu`; the demo shop opens with cards (SA-406–408) | Done (PR for `SA-406-weekly-run`). The weekly cron needs `CRON_SECRET` in Vercel to authorise |
-| Process | Lean mode: slices, CI as gate, go-live checklist |
+| Process | Lean mode: slices, CI as gate, unfinished work flagged in [SETUP.md](SETUP.md) |
 
 Parsers (`packages/parsers`) work on a `string[][]` table: `detect` → `prepare` (mapping and removed columns, no values read) → seller confirms → `transform` (async, hashes order IDs). File reading (Papa Parse for CSV, SheetJS for XLSX) belongs to the upload worker in SA-206. The synthetic generator is a separate entry, `@sa/parsers/synthetic`, so it stays out of the browser bundle.
 
@@ -36,31 +36,18 @@ Routes: `/` (landing), `/dang-ky`, `/kiem-tra-email`, `/dang-nhap`, `/dong-y` (c
 
 No cron runs daily jobs yet: Hobby allows one cron per day, and `/api/cron/weekly` is the only one registered. Adding a daily route is possible within the Hobby limit (one schedule per route).
 
-Known gaps carried forward:
-- If demo seeding fails or times out, the demo shop stays empty and isn't reseeded.
-- Very large order+SKU groups could overflow the merge's `int` sum, which rolls back the merge safely.
-- Upload resume after reload isn't built.
-- `llm_call` doesn't store the prompt version or the number of fallback cards yet, and every partial fallback is logged as `failed_placeholder`. Add columns (expand migration) before building the "more than 20% fallback" alert.
-- The weekly cron runs shops one by one for up to 4 minutes; shops not reached run the following week. Fine for a beta; move to the per-minute drain on Vercel Pro before scaling.
-- Each upload recomputes the whole shop's metrics in memory; fine at demo scale, revisit for very large shops (scope by SKU or move to the job once a cron runs).
+Known gaps and their fixes are tracked in [SETUP.md §3](SETUP.md#3-known-gaps-built-with-a-limitation).
 
 ## Open PRs
 
 | PR | What | Action |
 | --- | --- | --- |
 | #22 | Dependabot minor/patch group | Merge if CI is green |
-| (this slice) | Slice G actions, `SA-406-weekly-run` | Merge when CI is green |
+| (this slice) | Google sign-in and setup register, `SA-105-google-sign-in` | Merge when CI is green |
 
 ## Waiting on the owner
 
-| Item | Why it matters |
-| --- | --- |
-| GitHub: allow auto-merge; protect `main` with required checks | Until then Claude checks CI by hand before merging |
-| Neon preview branches: switch the integration to one shared preview branch, or add `NEON_API_KEY` secret + `NEON_PROJECT_ID` variable | Per-PR branches hit Neon's cap and stall Vercel previews; the cleanup workflow fails without the secret |
-| `DATABASE_URL_MIGRATE` secret in the GitHub `production` environment | No migration has ever been applied to Neon; `migrate.yml` fails until it exists |
-| Anthropic: `ANTHROPIC_API_KEY` + `LLM_MODEL_EXPLAIN` in Vercel, and `ANTHROPIC_API_KEY_EVAL` (a separate key with a spend limit) as a GitHub secret | Without them, cards use templates and the live eval workflow fails; confirm data location, retention and no-training terms (Q-T2) before beta |
-| `CRON_SECRET` in Vercel | The weekly cron (`/api/cron/weekly`, Monday 01:00 ICT) returns 401 without it, so no automatic weekly cards |
-| Production auth env in Vercel (`BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, SES settings) | Sign-up can't work on Vercel without them (go-live checklist) |
+Everything not done yet (settings, secrets, console steps, known gaps, backlog, open questions, future ideas) lives in **[SETUP.md](SETUP.md)**, with priorities and exact steps. Start with its section 0: the Neon database URLs in Vercel are readable by the team and must be replaced with Sensitive variables for a non-owner role.
 
 ## Environment facts
 

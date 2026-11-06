@@ -16,6 +16,8 @@ export interface AuthDeps {
   baseURL: string;
   secret: string;
   checkBreachedPasswords: boolean;
+  emailPassword: boolean;
+  google: { clientId: string; clientSecret: string } | null;
 }
 
 export function createAuth(deps: AuthDeps) {
@@ -28,7 +30,7 @@ export function createAuth(deps: AuthDeps) {
       schema: { user, session, account, verification, twoFactor: twoFactorTable, rateLimit },
     }),
     emailAndPassword: {
-      enabled: true,
+      enabled: deps.emailPassword,
       requireEmailVerification: true,
       minPasswordLength: 8,
       maxPasswordLength: 128,
@@ -36,6 +38,22 @@ export function createAuth(deps: AuthDeps) {
       onExistingUserSignUp: async ({ user: existing }) => {
         await deps.email.send(existingAccountEmail(existing.email, `${deps.baseURL}/dang-nhap`));
       },
+    },
+    socialProviders: {
+      google: {
+        enabled: deps.google !== null,
+        clientId: deps.google?.clientId ?? '',
+        clientSecret: deps.google?.clientSecret ?? '',
+        prompt: 'select_account',
+        // Data minimisation: keep the name Google returns, not the profile photo
+        mapProfileToUser: (profile) => ({ name: profile.name, image: undefined }),
+      },
+    },
+    account: {
+      // Never attach a Google login to an account whose email was not verified: blocks pre-registration takeover
+      accountLinking: { enabled: true, requireLocalEmailVerified: true, allowDifferentEmails: false },
+      // We never call Google APIs after sign-in, but Better Auth stores the tokens: keep them encrypted at rest
+      encryptOAuthTokens: true,
     },
     session: {
       expiresIn: 14 * DAY,
@@ -50,6 +68,7 @@ export function createAuth(deps: AuthDeps) {
         '/sign-in/email': { window: 60, max: 5 },
         '/sign-up/email': { window: 60, max: 3 },
         '/send-verification-email': { window: 300, max: 3 },
+        '/sign-in/social': { window: 60, max: 10 },
       },
     },
     advanced: {

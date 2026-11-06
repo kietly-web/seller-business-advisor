@@ -73,6 +73,7 @@ Each row names the decision, the business reason, the trade-off we accepted, and
 | D8 | **Separate, unticked consents recorded with policy version and text hash** | PDP Law requires provable, granular consent | More sign-up friction; a consent gate for accounts missing a record | [03](design/03-security-privacy.md) |
 | D9 | **Uploads go through Next.js server actions, not a public API** | Built-in protection against cross-site requests; no public attack surface for a single caller | Smaller chunks (1 MB request limit) and no external API until one is needed | [ADR-010](adr/ADR-010-ingest-server-actions.md) |
 | D10 | **A security reviewer agent checks every risky slice** (database, auth, parsing, AI input, new services) | Real users may come; mistakes here are costly | Extra time per risky slice. It paid off: see section 5 | [CLAUDE.md](../CLAUDE.md) |
+| D11 | **Google is the main sign-in; email and password appear only where verification email can be sent** | The owner and most sellers prefer one tap with Google; no email service needed to start | Sellers without a Google account need SES set up first. Google learns that the seller uses the app | [ADR-009](adr/ADR-009-ses-email-and-hibp.md), [03](design/03-security-privacy.md) |
 
 ### 3.3 Profit, recommendations and AI
 

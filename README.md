@@ -9,6 +9,7 @@ An AI decision assistant for small Vietnamese Shopee sellers. A seller uploads t
 | Understand the business case and every major decision | [docs/case-study.md](docs/case-study.md) |
 | Find any document | [docs/README.md](docs/README.md) |
 | Know where the build is now and what's next | [docs/STATUS.md](docs/STATUS.md) |
+| Pick up unfinished setup, gaps or future work | [docs/SETUP.md](docs/SETUP.md) |
 | Work on the code (people or AI agents) | [CLAUDE.md](CLAUDE.md), then the folder map below |
 
 ## Folder map
@@ -49,7 +50,8 @@ seller-business-advisor/
 │
 ├── docs/                      Everything written down (index: docs/README.md)
 │   ├── case-study.md          Decisions and trade-offs for business analysts
-│   ├── STATUS.md              Current stage, next slice, what's waiting on the owner
+│   ├── STATUS.md              Current stage and next slice
+│   ├── SETUP.md               Everything not done yet: settings, secrets, gaps, backlog, future ideas
 │   ├── discovery/             Requirement, story, metric and risk IDs (FR-xx, US-xx, R-x)
 │   ├── design/                System design pack, 00–09 (architecture, data, security, parsers, engine, AI, infra, plan)
 │   ├── adr/                   Decision records: one file per significant decision

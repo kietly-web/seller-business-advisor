@@ -10,11 +10,12 @@ An AI decision assistant for small Vietnamese Shopee sellers. It turns their exp
 | --- | --- |
 | `docs/STATUS.md` | Current stage, next slice, blockers, environment facts, gotchas. Read first; update in every slice PR |
 | `README.md` | Folder map and page list. Update it when you add a top-level folder, package or page |
+| `docs/SETUP.md` | Register of everything not done: settings and secrets (with where and how), security fixes, known gaps, backlog, open questions, future ideas. Add a row whenever you leave something unfinished |
 | `docs/README.md` | Index of every document, for people and agents |
 | `docs/case-study.md` | Decisions and trade-offs for BA readers. Add a row when a slice makes a significant decision or trade-off |
 | `docs/discovery/discovery-summary.md` | Requirement, story, risk and metric IDs (FR-xx, NFR-xx, US-xx, R-x). Cite these IDs. |
 | `Shopee Seller Advisor — BA Discovery Pack.docx` | Full discovery pack (human-readable record) |
-| `docs/design/` | System design: architecture, schema, security, parser, engine, LLM, infra, delivery plan (with the go-live checklist), traceability |
+| `docs/design/` | System design: architecture, schema, security, parser, engine, LLM, infra, delivery plan, traceability |
 | `docs/adr/` | Architecture decision records |
 | `docs/compliance/` | Counsel questions, data inventory, AI classification memo, breach runbook |
 | `.claude/agents/` | Two reviewers: `security-compliance-reviewer` and `ba-analyst` |
@@ -73,9 +74,10 @@ These come from the discovery pack and the Vietnamese legal register. Do not tra
 2. **CI is the gate.** Run `pnpm check` before pushing; merge when CI and the Vercel preview are green. No extra manual verification rounds.
 3. **Review only what's risky.** Run the `security-compliance-reviewer` on a slice that changes migrations or RLS, auth, ingestion or parsers, the LLM payload or prompts, or adds an external service. Skip it otherwise.
 4. **Docs follow contracts, not code.** Edit a design doc only when a contract changes (schema, API, rule, threat control). A decision gets an ADR. Implementation details go in the PR description, not in "as built" notes. Update `09-traceability.md` once per milestone.
-5. **Required but not yet needed → go-live checklist.** Pre-launch work (production secrets, separate login roles, Pro plan, legal pages) is tracked in the checklist in `08-delivery-plan.md` and built when the beta approaches, not earlier.
+5. **Required but not yet needed → `docs/SETUP.md`.** Pre-launch work (production secrets, separate login roles, Pro plan, legal pages) is tracked in the setup register and built when the beta approaches, not earlier.
 6. **Migrations are backward compatible.** Vercel may deploy code before or after the migration workflow runs, so changes go expand → deploy → contract: add columns or tables first, remove them in a later release.
-7. **Keep `docs/STATUS.md` current.** Every slice PR updates it: what's done, what's next, open PRs, owner blockers, and any new gotcha. It replaces status notes anywhere else.
+7. **Flag unfinished work in `docs/SETUP.md`.** Any setting, secret, console step, gap or follow-up you don't finish gets a row there in the same PR, so the next session can pick it up. Secrets go into Vercel as Sensitive, never `NEXT_PUBLIC_`.
+8. **Keep `docs/STATUS.md` current.** Every slice PR updates it: what's done, what's next, open PRs, owner blockers, and any new gotcha. It replaces status notes anywhere else.
 
 ## Working with other agents
 
