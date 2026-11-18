@@ -13,12 +13,12 @@
     "db:migrate": "node src/migrate.ts"
   },
   "dependencies": {
-    "@neondatabase/serverless": "1.2.0",
+    "@neondatabase/serverless": "1.2.1",
     "@sa/shared": "workspace:*",
     "drizzle-orm": "0.45.4"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "0.5.15",
+    "@electric-sql/pglite": "0.5.16",
     "drizzle-kit": "0.31.11"
   }
 }
